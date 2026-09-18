@@ -1,0 +1,29 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.avalon.preview'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.avalon.preview"
+        minSdk 24        // Android 7.0+，覆盖绝大多数设备（项目提示词要求 minSdk 24+）
+        targetSdk 34
+        versionCode 1
+        versionName "0.1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+// 零第三方依赖：界面为 WebView 承载本地 H5 游戏，不引入任何 androidx 库

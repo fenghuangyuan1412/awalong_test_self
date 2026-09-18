@@ -1,0 +1,12 @@
+# 构建工具与 SDK（本机安装，不入库）
+/_tools/
+/android-sdk/
+avalon-android/local.properties
+avalon-android/.gradle/
+avalon-android/build/
+avalon-android/app/build/
+
+# 系统杂物
+__pycache__/
+*.tmp
+.DS_Store

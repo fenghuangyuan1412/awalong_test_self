@@ -1,0 +1,51 @@
+# 技术决策记录（TECH_DECISIONS）
+
+> 按《阿瓦隆安卓版-Agent开发提示词》要求，记录关键选型与理由。决策随阶段更新，旧决策标注状态。
+
+## D1 · 预览版与安卓壳技术栈（2026-09-19，已采纳）
+
+**决策**：预览版采用「纯 JS 规则引擎 + 移动端 H5 界面」；安卓端采用「原生 Android 壳（Java，零第三方依赖）+ WebView 承载已验证的 H5 游戏」，产出可直接安装的 APK。
+
+**背景**：提示词的环境前提是"本机已安装 Unity 与 Android 构建模块"。实测本机（2026-09-19）：
+
+| 组件 | 提示词前提 | 实际环境 |
+|---|---|---|
+| Unity 2022.3 LTS / Unity 6 + Android 模块 | 已安装 | **未安装**（安装需数 GB 下载 + 交互式 Unity 账号激活，无法自动化） |
+| JDK 17+ | 需要 | ✅ JDK 19（D:\programme\java） |
+| Android SDK / Gradle | 需要 | ❌ 初始未装（本次已通过命令行装齐） |
+
+**备选对比**：
+
+| 方案 | 优点 | 缺点 | 结论 |
+|---|---|---|---|
+| A. 立即装 Unity 走原路线 | 与提示词完全一致 | 数 GB 下载 + 许可激活必须人工交互；当天无法产出可玩 App | 暂缓（见 D2） |
+| B. 原生壳 + WebView 承载已验证 H5 | 当天产出真 APK；游戏逻辑零改动复用已测代码；包体 <2MB；零第三方依赖 | 界面为 H5（性能/原生感弱于原生 UI） | **采纳（第一步）** |
+| C. Kotlin/Compose 原生重写 | 完全原生体验 | 与提示词指定的 Unity 栈不符；重写全部 UI 与引擎移植，周期长 | 不采纳 |
+
+**对提示词架构约束的遵守**：
+- 规则与界面分离：`core.js`（纯逻辑、零 DOM、数据驱动）↔ 计划中的 C# Core 层同构，移植成本低
+- 数据驱动：角色表/任务表全部集中在数据对象，禁止流程代码硬编码规则数字
+- minSdk 24 ✅；完全离线、不申请任何权限（隐私合规天然满足）
+
+## D2 · 正式版引擎路线（状态：待用户环境就绪）
+
+**决策**：正式版按提示词采用 Unity（2022.3 LTS 或 Unity 6）+ C#。
+
+**前置条件**（需用户参与）：
+1. 安装 Unity Hub + Editor（含 Android Build Support: SDK/NDK/JDK）
+2. Unity 账号登录激活许可（交互式）
+3. 之后按 Phase 0（GDD 已就绪）→ Phase 1（core.js → C# Core 移植 + NUnit）推进
+
+**当前 APK 与正式版的关系**：当前 APK 即 Phase 2（本地热座）的可玩交付物；
+Unity 版完成后，热座玩法交互设计（传递确认页、双轨道、私密出票流程）可直接复用。
+
+## D3 · 联机方案（状态：沿用提示词，Phase 4 前最终确认）
+
+首选 Unity Netcode for GameObjects + UGS 免费层；备选 Photon Fusion（回合制更友好）。
+若届时仍采用原生路线，则改用自建 WebSocket 房主权威方案——Phase 4 启动前出对比文档。
+
+## D4 · 构建工具链（已采纳）
+
+- Gradle 8.9 + AGP 8.5.2 + compileSdk 34 + Build-Tools 34.0.0（命令行构建，不依赖 Android Studio）
+- SDK/Gradle 安装于工作区 `_tools/`、`android-sdk/`（gitignore，不入库）
+- 构建：`python build_apk.py`（同步 assets → 调 Gradle → 产物复制到 `release/`）

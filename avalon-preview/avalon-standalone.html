@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#12172b">
+<title>阿瓦隆 · 预览版</title>
+<style>
+  :root {
+    --bg: #10152a;
+    --panel: #1b2340;
+    --panel2: #222c50;
+    --line: #3a4468;
+    --gold: #d4af37;
+    --gold2: #f0d98c;
+    --text: #e9e7f2;
+    --muted: #97a0bf;
+    --good: #3d6fd6;
+    --good2: #7fb0ff;
+    --evil: #b03a30;
+    --evil2: #e07060;
+    --ok: #2e9e5b;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #1d2748 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    min-height: 100vh; min-height: 100dvh;
+    touch-action: manipulation;
+  }
+  #app { max-width: 560px; margin: 0 auto; padding: 16px 14px calc(24px + env(safe-area-inset-bottom)); }
+  h1, h2, h3, .serif { font-family: Georgia, "Noto Serif SC", "Songti SC", serif; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+  .center { text-align: center; }
+
+  /* ---------- 顶部标题 ---------- */
+  .title-block { text-align: center; padding: 22px 0 10px; }
+  .title-block .game-title {
+    font-size: 44px; letter-spacing: 10px; margin: 0; color: var(--gold2);
+    text-shadow: 0 2px 18px rgba(212,175,55,.25); font-weight: 700;
+  }
+  .title-block .sub { color: var(--muted); font-size: 13px; letter-spacing: 2px; margin-top: 6px; }
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--line), transparent); margin: 14px 0; }
+
+  /* ---------- 卡片与面板 ---------- */
+  .card {
+    background: linear-gradient(180deg, var(--panel) 0%, rgba(27,35,64,.7) 100%);
+    border: 1px solid var(--line); border-radius: 16px; padding: 18px 16px; margin: 12px 0;
+  }
+  .card.glow { border-color: rgba(212,175,55,.45); box-shadow: 0 0 24px rgba(212,175,55,.08); }
+
+  /* ---------- 按钮 ---------- */
+  .btn {
+    display: block; width: 100%; min-height: 52px; margin: 8px 0;
+    border: none; border-radius: 12px; font-size: 17px; font-weight: 600; color: #1c1a10;
+    background: linear-gradient(180deg, var(--gold2), var(--gold));
+    box-shadow: 0 4px 14px rgba(212,175,55,.25); cursor: pointer;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost {
+    background: transparent; color: var(--muted); border: 1px solid var(--line); box-shadow: none; font-weight: 500;
+  }
+  .btn.good { background: linear-gradient(180deg, var(--good2), var(--good)); color: #fff; }
+  .btn.evil { background: linear-gradient(180deg, var(--evil2), var(--evil)); color: #fff; }
+  .btn.half { display: inline-block; width: 49%; }
+  .btn:disabled { opacity: .4; }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { flex: 1; }
+
+  /* ---------- 计数器 ---------- */
+  .stepper { display: flex; align-items: center; justify-content: center; gap: 18px; }
+  .stepper button {
+    width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--line);
+    background: var(--panel2); color: var(--gold2); font-size: 26px; cursor: pointer;
+  }
+  .stepper .num { font-size: 40px; font-weight: 700; min-width: 80px; text-align: center; color: var(--gold2); }
+
+  /* ---------- 名字输入 ---------- */
+  .name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .name-grid input {
+    width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel2); color: var(--text); font-size: 16px; padding: 0 12px; outline: none;
+  }
+  .name-grid input:focus { border-color: var(--gold); }
+
+  /* ---------- 传递设备 ---------- */
+  .handoff { text-align: center; padding: 30px 0 10px; }
+  .handoff .device { font-size: 46px; margin: 12px 0 4px; }
+  .handoff .pass-tip { color: var(--muted); font-size: 14px; letter-spacing: 1px; }
+  .handoff .big-name {
+    font-size: 34px; font-weight: 700; color: var(--gold2); margin: 6px 0 2px; letter-spacing: 2px;
+  }
+
+  /* ---------- 身份卡 ---------- */
+  .role-card { border-radius: 18px; padding: 26px 20px; text-align: center; border: 1px solid; }
+  .role-card.good { background: linear-gradient(180deg, #22335f, #17203d); border-color: rgba(127,176,255,.5); }
+  .role-card.evil { background: linear-gradient(180deg, #471f1f, #2b1518); border-color: rgba(224,112,96,.5); }
+  .role-card .icon { font-size: 58px; }
+  .role-card .rname { font-size: 30px; font-weight: 700; margin: 8px 0 4px; }
+  .role-card .badge { display: inline-block; font-size: 13px; padding: 3px 12px; border-radius: 999px; margin: 6px 0 10px; }
+  .role-card.good .badge { background: rgba(127,176,255,.18); color: var(--good2); border: 1px solid rgba(127,176,255,.4); }
+  .role-card.evil .badge { background: rgba(224,112,96,.16); color: var(--evil2); border: 1px solid rgba(224,112,96,.4); }
+  .role-card .rdesc { color: var(--text); font-size: 14px; line-height: 1.7; opacity: .92; }
+  .role-card .player-tag { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+
+  .vision { margin-top: 14px; text-align: left; }
+  .vision .v-title { font-size: 13px; color: var(--gold2); margin-bottom: 8px; font-weight: 600; }
+  .vision .v-item {
+    display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,.25);
+    border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; margin: 6px 0; font-size: 15px;
+  }
+  .vision .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .tag.evil, .tag.ally { background: rgba(224,112,96,.18); color: var(--evil2); border: 1px solid rgba(224,112,96,.45); }
+  .tag.merlinOrMorgana { background: rgba(212,175,55,.16); color: var(--gold2); border: 1px solid rgba(212,175,55,.45); }
+
+  /* ---------- 桌面顶栏 ---------- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 10px; }
+  .topbar .round-info { font-size: 15px; font-weight: 600; }
+  .topbar .leader-info { font-size: 14px; color: var(--gold2); }
+  .icon-btns button {
+    background: var(--panel2); border: 1px solid var(--line); color: var(--text);
+    border-radius: 10px; padding: 7px 10px; font-size: 15px; margin-left: 6px; cursor: pointer;
+  }
+
+  /* ---------- 任务轨道 ---------- */
+  .mission-track { display: flex; gap: 10px; justify-content: center; margin: 10px 0 4px; }
+  .mnode {
+    position: relative; width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; border: 2px solid var(--line); color: var(--muted); background: var(--panel);
+  }
+  .mnode.current { border-color: var(--gold); color: var(--gold2); box-shadow: 0 0 12px rgba(212,175,55,.3); }
+  .mnode.success { background: var(--good); border-color: var(--good2); color: #fff; }
+  .mnode.fail { background: var(--evil); border-color: var(--evil2); color: #fff; }
+  .mnode .tf {
+    position: absolute; top: -7px; right: -7px; background: var(--gold); color: #1c1a10;
+    font-size: 10px; font-weight: 700; border-radius: 999px; padding: 2px 5px; border: 1px solid #1c1a10;
+  }
+  .vote-track { display: flex; gap: 8px; justify-content: center; align-items: center; margin: 8px 0 2px; }
+  .vnode {
+    width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel);
+  }
+  .vnode.rejected { background: var(--evil); border-color: var(--evil2); }
+  .vote-label { text-align: center; color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+  /* ---------- 玩家选择 ---------- */
+  .players-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+  .players-grid.c4 { grid-template-columns: repeat(4, 1fr); }
+  .chip {
+    border: 2px solid var(--line); background: var(--panel2); border-radius: 14px;
+    padding: 12px 6px; text-align: center; cursor: pointer; color: var(--text); font-size: 14px;
+    min-height: 72px; position: relative;
+  }
+  .chip .avatar {
+    width: 34px; height: 34px; border-radius: 50%; margin: 0 auto 6px;
+    background: linear-gradient(180deg, #46527e, #333d63); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;
+  }
+  .chip.selected { border-color: var(--gold); background: rgba(212,175,55,.12); }
+  .chip.selected .avatar { background: linear-gradient(180deg, var(--gold2), var(--gold)); color: #1c1a10; }
+  .chip .crown { position: absolute; top: 4px; right: 6px; font-size: 14px; }
+  .chip.picked-target { border-color: var(--evil2); background: rgba(224,112,96,.15); }
+  .chip:disabled { opacity: .55; cursor: default; }
+
+  /* ---------- 投票结果 ---------- */
+  .vote-rows { margin: 10px 0; }
+  .vote-row {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(58,68,104,.5); padding: 9px 4px; font-size: 15px;
+  }
+  .vote-row .v { font-weight: 700; }
+  .vote-row .v.yes { color: var(--good2); }
+  .vote-row .v.no { color: var(--evil2); }
+  .tally { display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 19px; font-weight: 700; margin: 8px 0; }
+  .tally .yes-c { color: var(--good2); } .tally .no-c { color: var(--evil2); }
+
+  /* ---------- 结果横幅 ---------- */
+  .banner {
+    border-radius: 18px; padding: 30px 18px; text-align: center; border: 1px solid; margin: 10px 0;
+  }
+  .banner.good { background: linear-gradient(180deg, #22335f, #17203d); border-color: rgba(127,176,255,.55); }
+  .banner.evil { background: linear-gradient(180deg, #471f1f, #2b1518); border-color: rgba(224,112,96,.55); }
+  .banner .w-title { font-size: 32px; font-weight: 800; letter-spacing: 4px; }
+  .banner.good .w-title { color: var(--good2); } .banner.evil .w-title { color: var(--evil2); }
+  .banner .w-reason { color: var(--text); opacity: .85; margin-top: 10px; font-size: 15px; line-height: 1.6; }
+
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+  .result-item {
+    display: flex; gap: 10px; align-items: center; background: var(--panel2);
+    border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 14px;
+  }
+  .result-item .ri { font-size: 22px; }
+  .result-item.good-r { border-color: rgba(127,176,255,.4); }
+  .result-item.evil-r { border-color: rgba(224,112,96,.4); }
+
+  /* ---------- 提示 ---------- */
+  .hint-box {
+    background: rgba(212,175,55,.08); border: 1px dashed rgba(212,175,55,.4);
+    border-radius: 10px; padding: 9px 12px; font-size: 13px; color: var(--gold2); margin: 8px 0; line-height: 1.6;
+  }
+
+  /* ---------- 弹窗 ---------- */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(8,10,22,.78); z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    max-width: 520px; width: 100%; max-height: 82vh; overflow-y: auto; padding: 18px 16px;
+  }
+  .modal h3 { margin: 4px 0 10px; color: var(--gold2); }
+  .modal .rules p, .modal .rules li { font-size: 14px; line-height: 1.8; color: var(--text); }
+  .modal .rules table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+  .modal .rules th, .modal .rules td { border: 1px solid var(--line); padding: 5px 6px; text-align: center; }
+  .modal .rules th { background: var(--panel2); color: var(--gold2); }
+  .log-list { list-style: none; padding: 0; margin: 0; }
+  .log-list li { font-size: 13.5px; line-height: 1.7; padding: 7px 2px; border-bottom: 1px solid rgba(58,68,104,.45); color: var(--text); }
+
+  .footer-note { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; line-height: 1.8; }
+  #toast {
+    position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+    background: rgba(20,24,46,.95); border: 1px solid var(--line); color: var(--text);
+    padding: 10px 18px; border-radius: 12px; font-size: 14px; z-index: 60; display: none;
+    max-width: 86vw; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast"></div>
+<script>
+/*
+ * 阿瓦隆规则引擎（预览版）· 纯 JS，零 DOM 依赖
+ *
+ * 架构约束（对应项目提示词的分层要求）：
+ *  - 本文件只做规则建模（角色、组队、投票、任务、刺杀、胜负），不接触任何 UI。
+ *  - 角色配置、任务人数表全部数据驱动，禁止在流程代码里硬编码规则数字。
+ *  - 后续 Unity 版直接按本文件结构移植为 C# Core 层。
+ *
+ * 规则依据：The Resistance: Avalon 官方规则书（Indie Boards & Cards）
+ *  - 任务人数表 / 第4轮失败票阈值 / 5 连否决坏人胜 / 角色配置表 均按官方规则书实现。
+ */
+(function (root, factory) {
+  if (typeof module !== 'undefined' && module.exports) module.exports = factory();
+  else root.AvalonCore = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  /* ---------------- 数据：角色 ---------------- */
+  var ROLES = {
+    merlin:   { id: 'merlin',   name: '梅林',           team: 'good', icon: '🔮', desc: '能看到除莫德雷德以外的所有坏人。隐藏好自己，别被刺客认出。' },
+    percival: { id: 'percival', name: '派西维尔',       team: 'good', icon: '🛡️', desc: '看到“梅林与莫甘娜”两位候选人，但无法分辨谁是谁。保护梅林。' },
+    servant:  { id: 'servant',  name: '亚瑟的忠臣',     team: 'good', icon: '⚔️', desc: '忠诚的圆桌骑士。好人只能打出任务成功。' },
+    assassin: { id: 'assassin', name: '刺客',           team: 'evil', icon: '🗡️', desc: '好人赢下三轮任务后，由你指认梅林：指对则坏人直接获胜。' },
+    morgana:  { id: 'morgana',  name: '莫甘娜',         team: 'evil', icon: '🌙', desc: '在派西维尔眼中与梅林一模一样。负责误导好人。' },
+    mordred:  { id: 'mordred',  name: '莫德雷德',       team: 'evil', icon: '☠️', desc: '对梅林隐身：梅林看不到你。' },
+    oberon:   { id: 'oberon',   name: '奥伯伦',         team: 'evil', icon: '👁️', desc: '孤狼：你看不到同伴，同伴也看不到你。' },
+    minion:   { id: 'minion',   name: '莫德雷德的爪牙', team: 'evil', icon: '🩸', desc: '普通坏人，与同伴互相认识（奥伯伦除外）。' }
+  };
+
+  /* ---------------- 数据：各人数角色配置（官方规则书） ---------------- */
+  var SETUP = {
+    5:  ['merlin', 'percival', 'servant', 'assassin', 'morgana'],
+    6:  ['merlin', 'percival', 'servant', 'servant', 'assassin', 'morgana'],
+    7:  ['merlin', 'percival', 'servant', 'servant', 'assassin', 'morgana', 'minion'],
+    8:  ['merlin', 'percival', 'servant', 'servant', 'servant', 'assassin', 'morgana', 'minion'],
+    9:  ['merlin', 'percival', 'servant', 'servant', 'servant', 'servant', 'assassin', 'morgana', 'minion'],
+    10: ['merlin', 'percival', 'servant', 'servant', 'servant', 'servant', 'assassin', 'morgana', 'mordred', 'oberon']
+  };
+
+  /* ---------------- 数据：任务人数表（官方规则书） ----------------
+   * size: 上场人数；twoFails: 该轮需 2 张失败票才算任务失败（7人+ 的第4轮）
+   */
+  var QUESTS = {
+    5:  [{ size: 2 }, { size: 3 }, { size: 2 }, { size: 3 }, { size: 3 }],
+    6:  [{ size: 2 }, { size: 3 }, { size: 4 }, { size: 3 }, { size: 4 }],
+    7:  [{ size: 2 }, { size: 3 }, { size: 3 }, { size: 4, twoFails: true }, { size: 4 }],
+    8:  [{ size: 3 }, { size: 4 }, { size: 4 }, { size: 5, twoFails: true }, { size: 5 }],
+    9:  [{ size: 3 }, { size: 4 }, { size: 4 }, { size: 5, twoFails: true }, { size: 5 }],
+    10: [{ size: 3 }, { size: 4 }, { size: 4 }, { size: 5, twoFails: true }, { size: 5 }]
+  };
+
+  var MAX_REJECTS = 5; // 连续否决 5 次组队 → 坏人直接获胜
+
+  /* ---------------- 工具 ---------------- */
+  function mulberry32(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function shuffle(arr, rng) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function isEvil(roleId) { return ROLES[roleId].team === 'evil'; }
+  function isGood(roleId) { return ROLES[roleId].team === 'good'; }
+
+  function err(msg) { return { ok: false, error: msg }; }
+
+  /* ---------------- 建局 ---------------- */
+  function createGame(names, seed) {
+    var n = names.length;
+    if (!SETUP[n]) throw new Error('人数必须在 5–10 人，当前：' + n);
+    var rng = mulberry32(seed == null ? (Math.random() * 2147483647) | 0 : seed);
+    var pool = shuffle(SETUP[n], rng);
+    var players = [];
+    for (var i = 0; i < n; i++) {
+      players.push({ name: (names[i] || '').trim() || ('玩家' + (i + 1)), role: pool[i] });
+    }
+    var st = {
+      n: n,
+      players: players,
+      rngSeed: (seed == null ? null : seed),
+      leader: Math.floor(rng() * n),        // 随机起始队长
+      round: 0,                             // 当前任务轮 0..4
+      voteTrack: 0,                         // 本轮任务连续被否决次数
+      phase: 'propose',                     // propose | vote | mission | assassinate | over
+      proposal: null,                       // { leader, members:[座位号] }
+      voteOrder: null, votes: null,         // 全员投票（顺序 = 从队长开始顺时针）
+      missionOrder: null, missionVotes: null, // 队员任务票
+      results: [null, null, null, null, null], // 'success' | 'fail'（公开）
+      failCards: [null, null, null, null, null], // 每轮失败票张数（公开）
+      history: [],                          // 每次组队提案的公开记录
+      winner: null, winReason: null,        // 'good' | 'evil'
+      assassinated: null,
+      log: []
+    };
+    st.log.push('游戏开始：' + n + ' 人局，起始队长：' + players[st.leader].name);
+    return st;
+  }
+
+  function questOf(st, round) {
+    return QUESTS[st.n][(round == null ? st.round : round)];
+  }
+
+  /* ---------------- 私密视角 ---------------- */
+  // 返回该玩家能看到的信息条目：{ idx, name, kind }
+  // kind: 'evil'（确认坏人）| 'merlinOrMorgana'（二选一）| 'ally'（坏同伴）
+  function knownInfo(st, idx) {
+    var me = st.players[idx].role;
+    var out = [];
+    for (var i = 0; i < st.n; i++) {
+      if (i === idx) continue;
+      var role = st.players[i].role;
+      if (me === 'merlin') {
+        if (isEvil(role) && role !== 'mordred') out.push({ idx: i, name: st.players[i].name, kind: 'evil' });
+      } else if (me === 'percival') {
+        if (role === 'merlin' || role === 'morgana') out.push({ idx: i, name: st.players[i].name, kind: 'merlinOrMorgana' });
+      } else if (isEvil(me) && me !== 'oberon') {
+        if (isEvil(role) && role !== 'oberon') out.push({ idx: i, name: st.players[i].name, kind: 'ally' });
+      }
+    }
+    return out;
+  }
+
+  /* ---------------- 组队提案 ---------------- */
+  function proposeTeam(st, members) {
+    if (st.phase !== 'propose') return err('当前阶段不能组队');
+    var q = questOf(st);
+    if (!members || members.length !== q.size) return err('需要选择 ' + q.size + ' 名队员');
+    var seen = {};
+    for (var i = 0; i < members.length; i++) {
+      var m = members[i];
+      if (m < 0 || m >= st.n) return err('队员座位号无效');
+      if (seen[m]) return err('队员重复');
+      seen[m] = true;
+    }
+    if (!seen[st.leader]) return err('队长必须在队伍中');
+    var sorted = members.slice().sort(function (a, b) { return a - b; });
+    st.proposal = { leader: st.leader, members: sorted };
+    st.phase = 'vote';
+    st.votes = [];
+    st.voteOrder = [];
+    for (var k = 0; k < st.n; k++) st.voteOrder.push((st.leader + k) % st.n);
+    st.log.push('第' + (st.round + 1) + '轮 第' + (st.voteTrack + 1) + '次组队：' +
+      st.players[st.leader].name + ' 提名 ' + sorted.map(function (i) { return st.players[i].name; }).join('、'));
+    return { ok: true };
+  }
+
+  /* ---------------- 全员投票（同意/反对） ----------------
+   * 返回 { ok, done, approved?, gameOver? }
+   * 规则：同意票严格过半才算通过（平局即否决）。
+   */
+  function vote(st, approve) {
+    if (st.phase !== 'vote') return err('当前不是投票阶段');
+    st.votes.push(!!approve);
+    if (st.votes.length < st.n) return { ok: true, done: false };
+
+    var yes = 0, i;
+    for (i = 0; i < st.votes.length; i++) if (st.votes[i]) yes++;
+    var no = st.n - yes;
+    var approved = yes * 2 > st.n;
+    st.history.push({
+      round: st.round, attempt: st.voteTrack, leader: st.proposal.leader,
+      members: st.proposal.members.slice(), approved: approved, yes: yes, no: no,
+      votes: st.votes.slice()
+    });
+    st.log.push('投票：同意 ' + yes + ' / 反对 ' + no + ' → ' + (approved ? '通过' : '被否决'));
+
+    if (approved) {
+      st.phase = 'mission';
+      st.missionVotes = [];
+      st.missionOrder = st.proposal.members.slice().sort(function (a, b) { return a - b; });
+      return { ok: true, done: true, approved: true };
+    }
+
+    st.voteTrack++;
+    if (st.voteTrack >= MAX_REJECTS) {
+      st.winner = 'evil';
+      st.winReason = '连续 ' + MAX_REJECTS + ' 次组队被否决，坏人直接获胜';
+      st.phase = 'over';
+      st.log.push(st.winReason);
+      return { ok: true, done: true, approved: false, gameOver: true };
+    }
+    st.leader = (st.leader + 1) % st.n; // 队长顺延
+    st.proposal = null;
+    st.phase = 'propose';
+    return { ok: true, done: true, approved: false };
+  }
+
+  /* ---------------- 任务票（秘密投成功/失败） ----------------
+   * 好人只能投成功；坏人可自选。返回 { ok, done, outcome?, gameOver? }
+   */
+  function playMission(st, success) {
+    if (st.phase !== 'mission') return err('当前不是任务阶段');
+    var actor = st.missionOrder[st.missionVotes.length];
+    if (isGood(st.players[actor].role) && !success) return err('好人只能打出任务成功');
+    st.missionVotes.push({ player: actor, success: !!success });
+    if (st.missionVotes.length < st.missionOrder.length) return { ok: true, done: false };
+
+    var q = questOf(st);
+    var fails = 0, i;
+    for (i = 0; i < st.missionVotes.length; i++) if (!st.missionVotes[i].success) fails++;
+    var needed = q.twoFails ? 2 : 1;
+    var outcome = fails >= needed ? 'fail' : 'success';
+    st.results[st.round] = outcome;
+    st.failCards[st.round] = fails;
+    st.log.push('第' + (st.round + 1) + '轮任务：' + (outcome === 'success' ? '成功 ✓' : '失败 ✗') +
+      '（失败票 ' + fails + ' 张）');
+
+    var succ = 0, fail = 0;
+    for (i = 0; i < st.results.length; i++) {
+      if (st.results[i] === 'success') succ++;
+      else if (st.results[i] === 'fail') fail++;
+    }
+
+    if (succ >= 3) {
+      st.phase = 'assassinate';
+      return { ok: true, done: true, outcome: outcome };
+    }
+    if (fail >= 3) {
+      st.winner = 'evil';
+      st.winReason = '三项任务失败，坏人获胜';
+      st.phase = 'over';
+      st.log.push(st.winReason);
+      return { ok: true, done: true, outcome: outcome, gameOver: true };
+    }
+    st.round++;
+    st.voteTrack = 0;
+    st.proposal = null;
+    st.leader = (st.leader + 1) % st.n; // 队长顺延
+    st.phase = 'propose';
+    return { ok: true, done: true, outcome: outcome };
+  }
+
+  /* ---------------- 刺杀梅林 ---------------- */
+  function assassinOf(st) {
+    for (var i = 0; i < st.n; i++) if (st.players[i].role === 'assassin') return i;
+    return -1;
+  }
+
+  function assassinate(st, targetIdx) {
+    if (st.phase !== 'assassinate') return err('当前不是刺杀阶段');
+    if (targetIdx < 0 || targetIdx >= st.n) return err('刺杀目标无效');
+    var target = st.players[targetIdx];
+    st.assassinated = targetIdx;
+    if (target.role === 'merlin') {
+      st.winner = 'evil';
+      st.winReason = '刺客指认梅林正确，坏人获胜';
+    } else {
+      st.winner = 'good';
+      st.winReason = '刺客指认错误（' + target.name + ' 并非梅林），好人获胜';
+    }
+    st.phase = 'over';
+    st.log.push('刺客指认 ' + target.name + ' —— ' + (target.role === 'merlin' ? '指认正确' : '指认错误') +
+      '，真实身份：' + ROLES[target.role].name);
+    return { ok: true, correct: target.role === 'merlin', targetRole: target.role };
+  }
+
+  /* ---------------- 供 UI 使用的查询 ---------------- */
+  function voteResultRows(st) {
+    // 按座位顺序返回 [{player, approve}]
+    var rows = [];
+    for (var i = 0; i < st.voteOrder.length; i++) rows.push({ player: st.voteOrder[i], approve: st.votes[i] });
+    rows.sort(function (a, b) { return a.player - b.player; });
+    return rows;
+  }
+
+  return {
+    ROLES: ROLES,
+    SETUP: SETUP,
+    QUESTS: QUESTS,
+    MAX_REJECTS: MAX_REJECTS,
+    mulberry32: mulberry32,
+    isEvil: isEvil,
+    isGood: isGood,
+    createGame: createGame,
+    questOf: questOf,
+    knownInfo: knownInfo,
+    proposeTeam: proposeTeam,
+    vote: vote,
+    playMission: playMission,
+    assassinOf: assassinOf,
+    assassinate: assassinate,
+    voteResultRows: voteResultRows
+  };
+});
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var C = window.AvalonCore;
+  var app = document.getElementById('app');
+  var modalRoot = document.getElementById('modal-root');
+
+  var UI = {
+    screen: 'setup',          // setup|handoff|reveal|board|vote|voteResult|mission|missionResult|assassinate|assassinVerdict|gameover
+    count: 5,
+    names: [],
+    data: {},                 // 当前屏的临时数据
+    S: null                   // 核心状态
+  };
+
+  /* ================= 通用 ================= */
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function setScreen(name, data) {
+    UI.screen = name;
+    UI.data = data || {};
+    render();
+    window.scrollTo(0, 0);
+  }
+  var toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.style.display = 'none'; }, 2200);
+  }
+  function openModal(html) {
+    modalRoot.innerHTML = '<div class="modal-mask" data-action="close-modal" data-modal-mask="1"><div class="modal">' + html +
+      '<button class="btn ghost" data-action="close-modal" style="margin-top:12px">关闭</button></div></div>';
+  }
+  function closeModal() { modalRoot.innerHTML = ''; }
+  function handoff(name, hint, actionLabel, cb) {
+    UI.data = { name: name, hint: hint, actionLabel: actionLabel, cb: cb };
+    UI.screen = 'handoff';
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  /* ================= 设置页 ================= */
+  function roleSummary(n) {
+    var setup = C.SETUP[n], counts = {};
+    setup.forEach(function (r) { counts[r] = (counts[r] || 0) + 1; });
+    var order = ['merlin', 'percival', 'servant', 'assassin', 'morgana', 'mordred', 'oberon', 'minion'];
+    var good = [], evil = [];
+    order.forEach(function (r) {
+      if (!counts[r]) return;
+      var ro = C.ROLES[r];
+      var label = ro.icon + ro.name + (counts[r] > 1 ? ' ×' + counts[r] : '');
+      (ro.team === 'good' ? good : evil).push(label);
+    });
+    return { good: good, evil: evil };
+  }
+
+  function renderSetup() {
+    var sum = roleSummary(UI.count);
+    var nameInputs = '';
+    for (var i = 0; i < UI.count; i++) {
+      nameInputs += '<input type="text" maxlength="8" placeholder="玩家' + (i + 1) + '" value="' +
+        esc(UI.names[i] || '') + '" data-name-idx="' + i + '">';
+    }
+    var quests = C.QUESTS[UI.count].map(function (q, i) {
+      return '第' + (i + 1) + '轮 ' + q.size + '人' + (q.twoFails ? '（需2张失败票）' : '');
+    }).join(' · ');
+
+    app.innerHTML =
+      '<div class="title-block"><h1 class="game-title">阿瓦隆</h1>' +
+      '<div class="sub">AVALON · 本地热座预览版</div></div>' +
+      '<div class="card glow"><div class="center muted small" style="margin-bottom:8px">选择人数（5–10 人，一台设备轮流传递）</div>' +
+      '<div class="stepper"><button data-action="dec-count">−</button><div class="num">' + UI.count + '</div><button data-action="inc-count">＋</button></div>' +
+      '<div class="divider"></div>' +
+      '<div class="center small"><b style="color:var(--good2)">蓝方（好人）</b>：' + sum.good.join('　') + '</div>' +
+      '<div class="center small" style="margin-top:4px"><b style="color:var(--evil2)">红方（坏人）</b>：' + sum.evil.join('　') + '</div>' +
+      '<div class="hint-box" style="text-align:center">📋 任务人数：' + quests + '</div></div>' +
+      '<div class="card"><div class="small muted" style="margin-bottom:8px">玩家昵称（可留空使用默认）</div>' +
+      '<div class="name-grid">' + nameInputs + '</div>' +
+      '<button class="btn" data-action="start">开始游戏</button>' +
+      '<div class="btn-row"><button class="btn ghost" data-action="show-rules">📖 规则速查</button>' +
+      '<button class="btn ghost" data-action="show-about">ℹ️ 关于</button></div></div>' +
+      '<div class="footer-note">预览版 v0.1 · 规则按《The Resistance: Avalon》官方规则书实现<br>后续将按项目路线图开发 Unity 安卓版（联机 / 美术 / 上架）</div>';
+  }
+
+  function collectNames() {
+    var out = [];
+    for (var i = 0; i < UI.count; i++) out.push((UI.names[i] || '').trim() || ('玩家' + (i + 1)));
+    return out;
+  }
+
+  function startGame() {
+    UI.S = C.createGame(collectNames());
+    UI.revealIdx = 0;
+    revealStep();
+  }
+
+  /* ================= 身份展示 ================= */
+  function revealStep() {
+    var S = UI.S;
+    if (UI.revealIdx >= S.n) return toProposeHandoff();
+    var p = S.players[UI.revealIdx];
+    handoff(p.name, '身份保密 · 请确认身边无人偷看', '我是 ' + p.name + '，查看身份', function () {
+      setScreen('reveal', { idx: UI.revealIdx });
+    });
+  }
+
+  function renderReveal() {
+    var S = UI.S, idx = UI.data.idx, p = S.players[idx], ro = C.ROLES[p.role];
+    var known = C.knownInfo(S, idx);
+    var vision = '';
+    if (p.role === 'oberon') {
+      vision = '<div class="v-item">👁️ 你是孤狼：看不到任何同伴，同伴也看不到你</div>';
+    } else if (p.role === 'servant') {
+      vision = '<div class="v-item">你没有特殊视野。相信梅林，帮他隐藏身份</div>';
+    } else if (known.length) {
+      var items = known.map(function (k) {
+        var tag = k.kind === 'evil' ? '<span class="tag evil">坏人</span>'
+          : k.kind === 'ally' ? '<span class="tag ally">同伴</span>'
+          : '<span class="tag merlinOrMorgana">梅林？莫甘娜？</span>';
+        return '<div class="v-item">' + tag + '<b>' + esc(k.name) + '</b></div>';
+      }).join('');
+      vision = '<div class="v-title">🔮 你的视野（仅你可见）</div>' + items;
+      if (p.role === 'percival') {
+        vision += '<div class="small muted" style="margin-top:4px">以上两位中，一位是真正的梅林，一位是莫甘娜</div>';
+      }
+    }
+    app.innerHTML =
+      '<div class="card glow" style="padding:0;overflow:hidden">' +
+      '<div class="role-card ' + ro.team + '">' +
+      '<div class="player-tag">玩家：' + esc(p.name) + '</div>' +
+      '<div class="icon">' + ro.icon + '</div>' +
+      '<div class="rname serif">' + ro.name + '</div>' +
+      '<div class="badge">' + (ro.team === 'good' ? '蓝方 · 亚瑟的忠臣' : '红方 · 莫德雷德的爪牙') + '</div>' +
+      '<div class="rdesc">' + ro.desc + '</div>' +
+      '<div class="vision">' + vision + '</div>' +
+      '</div></div>' +
+      '<button class="btn" data-action="role-ack">我记住了，传给下一位</button>' +
+      '<div class="center small muted">看完请立即传递设备，避免身份泄露</div>';
+  }
+
+  /* ================= 组队（桌面） ================= */
+  function toProposeHandoff() {
+    var S = UI.S, L = S.players[S.leader], q = C.questOf(S);
+    handoff(L.name, '第 ' + (S.round + 1) + ' 轮任务 · 请队长组建 ' + q.size + ' 人队伍',
+      '我是 ' + L.name + '（👑 队长），开始组队', function () { setScreen('board'); });
+  }
+
+  function missionTrackHtml(S) {
+    var html = '<div class="mission-track">';
+    for (var i = 0; i < 5; i++) {
+      var q = C.questOf(S, i), r = S.results[i], cls = 'mnode';
+      var inner = q.size;
+      if (r === 'success') { cls += ' success'; inner = '✓'; }
+      else if (r === 'fail') { cls += ' fail'; inner = '✗'; }
+      else if (i === S.round) cls += ' current';
+      html += '<div class="' + cls + '">' + inner + (q.twoFails ? '<span class="tf">2票</span>' : '') + '</div>';
+    }
+    html += '</div>';
+    var vt = '<div class="vote-track">';
+    for (var j = 0; j < C.MAX_REJECTS; j++) vt += '<div class="vnode' + (j < S.voteTrack ? ' rejected' : '') + '"></div>';
+    vt += '</div><div class="vote-label">组队被否决 ' + S.voteTrack + '/' + C.MAX_REJECTS + '（满 ' + C.MAX_REJECTS + ' 坏人直接获胜）</div>';
+    return html + vt;
+  }
+
+  function renderBoard() {
+    var S = UI.S, q = C.questOf(S);
+    var chips = '';
+    for (var i = 0; i < S.n; i++) {
+      var sel = i === S.leader || (UI.data.selected && UI.data.selected.indexOf(i) >= 0);
+      chips += '<button class="chip' + (sel ? ' selected' : '') + '" data-action="toggle-player" data-idx="' + i + '"' +
+        (i === S.leader ? ' disabled' : '') + '>' +
+        (i === S.leader ? '<span class="crown">👑</span>' : '') +
+        '<div class="avatar">' + esc(S.players[i].name.charAt(0)) + '</div>' + esc(S.players[i].name) + '</button>';
+    }
+    var selCount = UI.data.selected ? UI.data.selected.length + 1 : 1; // 队长始终在内
+    app.innerHTML =
+      '<div class="topbar"><div class="round-info">第 ' + (S.round + 1) + ' / 5 轮任务</div>' +
+      '<div class="icon-btns"><button data-action="show-log">📜 日志</button><button data-action="show-rules">📖 规则</button></div></div>' +
+      '<div class="topbar" style="margin-top:0"><div class="leader-info">👑 队长：' + esc(S.players[S.leader].name) + '</div>' +
+      '<div class="muted small">需选出 <b style="color:var(--gold2)">' + q.size + '</b> 人</div></div>' +
+      missionTrackHtml(S) +
+      (q.twoFails ? '<div class="hint-box">⚠ 本轮为“双失败票”任务：需要 <b>2 张</b>失败票才算任务失败</div>' : '') +
+      '<div class="card"><div class="center" style="font-weight:600">请点选 ' + q.size + ' 名队员（👑队长已在内）</div>' +
+      '<div class="players-grid' + (S.n > 6 ? ' c4' : '') + '">' + chips + '</div>' +
+      '<div class="center muted small">已选 ' + selCount + ' / ' + q.size + '（含队长）</div>' +
+      '<button class="btn" data-action="confirm-team"' + (selCount === q.size ? '' : ' disabled') + '>确认提案</button></div>';
+  }
+
+  function togglePlayer(idx) {
+    var S = UI.S, q = C.questOf(S);
+    var sel = (UI.data.selected || []).slice();
+    if (idx === S.leader) { toast('队长已在队伍中'); return; }
+    var pos = sel.indexOf(idx);
+    if (pos >= 0) sel.splice(pos, 1);
+    else {
+      if (sel.length >= q.size - 1) { toast('含队长共 ' + q.size + ' 人，不能再多选'); return; }
+      sel.push(idx);
+    }
+    setScreen('board', { selected: sel });
+  }
+
+  function confirmTeam() {
+    var S = UI.S, q = C.questOf(S);
+    var sel = (UI.data.selected || []).slice();
+    if (sel.indexOf(S.leader) < 0) sel = [S.leader].concat(sel);
+    if (sel.length !== q.size) { toast('需要 ' + q.size + ' 名队员（含队长）'); return; }
+    var r = C.proposeTeam(S, sel);
+    if (!r.ok) { toast(r.error); return; }
+    setScreen('board', { selected: [] });
+    voteStep();
+  }
+
+  /* ================= 投票 ================= */
+  function voteStep() {
+    var S = UI.S;
+    if (S.phase !== 'vote' || S.votes.length >= S.n) return showVoteResult();
+    var p = S.players[S.voteOrder[S.votes.length]];
+    handoff(p.name, '第 ' + (S.round + 1) + ' 轮 · 第 ' + (S.voteTrack + 1) + ' 次组队投票（' + (S.votes.length + 1) + '/' + S.n + '）',
+      '我是 ' + p.name + '，开始投票', function () { setScreen('vote'); });
+  }
+
+  function renderVote() {
+    var S = UI.S, p = S.players[S.voteOrder[S.votes.length]];
+    var members = S.proposal.members.map(function (i) { return esc(S.players[i].name); }).join('、');
+    app.innerHTML =
+      '<div class="card glow center">' +
+      '<div class="muted small">队长提案</div>' +
+      '<div style="font-size:17px;line-height:1.7;margin:8px 0 2px">👑 ' + esc(S.players[S.proposal.leader].name) + ' 提名：</div>' +
+      '<div style="font-size:18px;font-weight:700;color:var(--gold2)">' + members + '</div>' +
+      '<div class="divider"></div>' +
+      '<div class="small muted">你的一票（其他人请勿观看）</div>' +
+      '<div style="font-size:24px;font-weight:700;margin:8px 0 14px">' + esc(p.name) + '</div>' +
+      '<div class="btn-row"><button class="btn good" data-action="vote-cast" data-v="1">👍 同意</button>' +
+      '<button class="btn evil" data-action="vote-cast" data-v="0">👎 反对</button></div>' +
+      '<div class="small muted" style="margin-top:8px">同意票过半即通过；平局视为否决</div></div>';
+  }
+
+  function castVote(v) {
+    var S = UI.S;
+    var r = C.vote(S, !!v);
+    if (!r.ok) { toast(r.error); return; }
+    if (S.phase === 'vote') voteStep();
+    else showVoteResult();
+  }
+
+  function showVoteResult() {
+    var S = UI.S, h = S.history[S.history.length - 1];
+    var rows = C.voteResultRows(S).map(function (row) {
+      var p = S.players[row.player];
+      return '<div class="vote-row"><span>' + esc(p.name) + (row.player === h.leader ? ' 👑' : '') +
+        (h.members.indexOf(row.player) >= 0 ? ' <span class="muted small">（队员）</span>' : '') + '</span>' +
+        '<span class="v ' + (row.approve ? 'yes' : 'no') + '">' + (row.approve ? '同意' : '反对') + '</span></div>';
+    }).join('');
+    setScreen('voteResult', {});
+    app.innerHTML =
+      '<div class="card glow"><div class="center" style="font-size:22px;font-weight:700;color:' +
+      (h.approved ? 'var(--good2)' : 'var(--evil2)') + '">' + (h.approved ? '✓ 队伍通过' : '✗ 队伍被否决') + '</div>' +
+      '<div class="tally"><span class="yes-c">同意 ' + h.yes + '</span><span class="muted">:</span><span class="no-c">反对 ' + h.no + '</span></div>' +
+      '<div class="vote-rows">' + rows + '</div></div>' +
+      '<button class="btn" data-action="vote-result-continue">继续</button>';
+  }
+
+  function afterVoteResult() {
+    var S = UI.S;
+    if (S.phase === 'over') return renderGameOver();
+    if (S.phase === 'mission') return missionStep();
+    toProposeHandoff();
+  }
+
+  /* ================= 任务 ================= */
+  function missionStep() {
+    var S = UI.S;
+    if (S.phase !== 'mission' || S.missionVotes.length >= S.missionOrder.length) return showMissionResult();
+    var p = S.players[S.missionOrder[S.missionVotes.length]];
+    handoff(p.name, '任务执行 · 仅队员依次操作（' + (S.missionVotes.length + 1) + '/' + S.missionOrder.length + '）',
+      '我是 ' + p.name + '，执行任务', function () { setScreen('mission'); });
+  }
+
+  function renderMission() {
+    var S = UI.S, p = S.players[S.missionOrder[S.missionVotes.length]], ro = C.ROLES[p.role];
+    var evilButtons = ro.team === 'evil'
+      ? '<div class="btn-row"><button class="btn good" data-action="mission-cast" data-v="1">任务成功</button>' +
+        '<button class="btn evil" data-action="mission-cast" data-v="0">任务失败</button></div>' +
+        '<div class="small muted center" style="margin-top:8px">作为坏人，你可以选择打出失败票；任务票不会公开是谁打的</div>'
+      : '<button class="btn good" data-action="mission-cast" data-v="1">任务成功</button>' +
+        '<div class="small muted center" style="margin-top:8px">好人只能打出任务成功</div>';
+    app.innerHTML =
+      '<div class="card glow center">' +
+      '<div class="muted small">第 ' + (S.round + 1) + ' 轮任务 · 你的任务票</div>' +
+      '<div style="font-size:26px;font-weight:700;margin:10px 0 2px">' + esc(p.name) + '</div>' +
+      '<div class="small" style="color:var(--muted)">' + ro.icon + ' ' + ro.name + '（' + (ro.team === 'good' ? '好人' : '坏人') + '）</div>' +
+      '<div class="divider"></div>' + evilButtons + '</div>';
+  }
+
+  function castMission(v) {
+    var S = UI.S;
+    var r = C.playMission(S, !!v);
+    if (!r.ok) { toast(r.error); return; }
+    if (S.phase === 'mission') missionStep();
+    else showMissionResult();
+  }
+
+  function showMissionResult() {
+    var S = UI.S, round = Math.min(S.round, 4);
+    var outcome = S.results[round] || (S.phase === 'over' ? null : null);
+    // 刺杀阶段时 S.round 未变，results[round] 即本轮结果
+    var isWin = outcome === 'success';
+    var team = S.missionOrder.map(function (i) { return esc(S.players[i].name); }).join('、');
+    var fails = S.failCards[round];
+    var q = C.questOf(S, round);
+    setScreen('missionResult', {});
+    app.innerHTML =
+      '<div class="banner ' + (isWin ? 'good' : 'evil') + '">' +
+      '<div class="w-title serif">' + (isWin ? '任务成功' : '任务失败') + '</div>' +
+      '<div class="w-reason">第 ' + (round + 1) + ' 轮 · 出现 ' + fails + ' 张失败票' +
+      (q.twoFails ? '（本轮需 2 张才算失败）' : '') + '</div></div>' +
+      '<div class="card"><div class="small muted center" style="margin-bottom:6px">本轮队员</div>' +
+      '<div class="center" style="font-size:16px;line-height:1.8">' + team + '</div></div>' +
+      missionTrackHtml(S) +
+      '<button class="btn" data-action="mission-result-continue">继续</button>';
+  }
+
+  function afterMissionResult() {
+    var S = UI.S;
+    if (S.phase === 'over') return renderGameOver();
+    if (S.phase === 'assassinate') return assassinateChain();
+    toProposeHandoff();
+  }
+
+  /* ================= 刺杀 ================= */
+  function assassinateChain() {
+    var S = UI.S, a = C.assassinOf(S);
+    handoff(S.players[a].name, '好人三胜 · 刺客的最后机会', '我是 ' + S.players[a].name + '（🗡️ 刺客），开始指认',
+      function () { setScreen('assassinate', { target: null }); });
+  }
+
+  function renderAssassinate() {
+    var S = UI.S;
+    var chips = '';
+    for (var i = 0; i < S.n; i++) {
+      var picked = UI.data.target === i;
+      chips += '<button class="chip' + (picked ? ' picked-target' : '') + '" data-action="pick-target" data-idx="' + i + '">' +
+        '<div class="avatar">' + esc(S.players[i].name.charAt(0)) + '</div>' + esc(S.players[i].name) + '</button>';
+    }
+    app.innerHTML =
+      '<div class="card glow"><div class="center" style="font-size:20px;font-weight:700;color:var(--evil2)">🗡️ 刺杀梅林</div>' +
+      '<div class="center small muted" style="margin:6px 0">指认正确 → 坏人获胜；指认错误 → 好人获胜</div>' +
+      '<div class="players-grid' + (S.n > 6 ? ' c4' : '') + '">' + chips + '</div>' +
+      '<button class="btn evil" data-action="confirm-assassin"' + (UI.data.target == null ? ' disabled' : '') + '>确认指认</button></div>';
+  }
+
+  function renderAssassinVerdict() {
+    var S = UI.S, t = S.assassinated, p = S.players[t], ro = C.ROLES[p.role];
+    var correct = ro.id === 'merlin';
+    setScreen('assassinVerdict', {});
+    app.innerHTML =
+      '<div class="card glow center"><div class="muted small">刺客指认了</div>' +
+      '<div style="font-size:28px;font-weight:700;margin:8px 0">' + esc(p.name) + '</div>' +
+      '<div class="role-card ' + ro.team + '" style="padding:18px 14px">' +
+      '<div class="icon">' + ro.icon + '</div><div class="rname serif" style="font-size:24px">' + ro.name + '</div></div>' +
+      '<div style="font-size:19px;font-weight:700;margin-top:14px;color:' + (correct ? 'var(--evil2)' : 'var(--good2)') + '">' +
+      (correct ? '❌ 指认正确 —— 梅林被刺杀！' : '✓ 指认错误 —— 梅林安然无恙！') + '</div></div>' +
+      '<button class="btn" data-action="verdict-continue">查看结算</button>';
+  }
+
+  /* ================= 结算 ================= */
+  function renderGameOver() {
+    var S = UI.S;
+    var goodWin = S.winner === 'good';
+    var roles = S.players.map(function (p, i) {
+      var ro = C.ROLES[p.role];
+      return '<div class="result-item ' + (ro.team === 'good' ? 'good-r' : 'evil-r') + '">' +
+        '<span class="ri">' + ro.icon + '</span><div><b>' + esc(p.name) + '</b>' +
+        '<div class="small muted">' + ro.name + ' · ' + (ro.team === 'good' ? '好人' : '坏人') + '</div></div></div>';
+    }).join('');
+    app.innerHTML =
+      '<div class="banner ' + (goodWin ? 'good' : 'evil') + '">' +
+      '<div class="w-title serif">' + (goodWin ? '蓝方胜利' : '红方胜利') + '</div>' +
+      '<div class="w-reason">' + esc(S.winReason) + '</div></div>' +
+      '<div class="card"><div class="center" style="font-weight:600;margin-bottom:6px">身份揭晓</div>' +
+      '<div class="result-grid">' + roles + '</div></div>' +
+      missionTrackHtml(S) +
+      '<button class="btn" data-action="restart-same">🔁 同样玩家再来一局</button>' +
+      '<button class="btn ghost" data-action="back-setup">返回设置</button>';
+  }
+
+  /* ================= 弹窗内容 ================= */
+  function rulesHtml() {
+    var rows = '';
+    [5, 6, 7, 8, 9, 10].forEach(function (n) {
+      var qs = C.QUESTS[n].map(function (q) { return q.size + (q.twoFails ? '★' : ''); }).join(' / ');
+      rows += '<tr><td>' + n + '人</td><td>' + qs + '</td></tr>';
+    });
+    return '<div class="rules"><h3>对局流程</h3><ol>' +
+      '<li><b>组队</b>：队长选人（必须包含自己）</li>' +
+      '<li><b>全员投票</b>：同意票<b>严格过半</b>通过（平局=否决）；否决后队长顺延下一位</li>' +
+      '<li><b>连否 5 次</b>：坏人直接获胜</li>' +
+      '<li><b>任务</b>：队员秘密出票，好人只能出“成功”，坏人可出“失败”；有 1 张失败票任务即失败（★轮需 2 张）</li>' +
+      '<li><b>胜负</b>：好人赢 3 轮 → 刺杀梅林，刺客指对则坏人胜；坏人赢 3 轮 → 坏人直接胜</li></ol>' +
+      '<h3>任务人数表（★ = 需 2 张失败票）</h3><table><tr><th>人数</th><th>第1/2/3/4/5轮</th></tr>' + rows + '</table>' +
+      '<h3>角色视野</h3><ul>' +
+      '<li><b>梅林</b>：看到所有坏人（莫德雷德除外）</li>' +
+      '<li><b>派西维尔</b>：看到梅林与莫甘娜（无法分辨）</li>' +
+      '<li><b>坏人</b>：互相认识（奥伯伦除外，孤狼无视野）</li>' +
+      '<li><b>莫德雷德</b>：梅林看不到他</li></ul>' +
+      '<p class="muted small">规则依据：《The Resistance: Avalon》官方规则书（Indie Boards & Cards）。</p></div>';
+  }
+
+  function aboutHtml() {
+    return '<div class="rules"><h3>阿瓦隆 · 预览版</h3>' +
+      '<p>本地热座（传递设备）可玩版本，支持 5–10 人，包含全部核心角色与完整胜负流程。</p>' +
+      '<p>本预览版对应项目路线图的 Phase 1（规则引擎）+ Phase 2（本地热座界面）的最小闭环；' +
+      '规则逻辑独立于界面（core.js），后续 Unity 安卓版（联机、美术、上架）按开发路线图推进。</p>' +
+      '<p class="muted small">学习与个人使用用途。商业发布前需按提示词完成 IP 合规改造。</p></div>';
+  }
+
+  /* ================= 事件路由 ================= */
+  var ACTIONS = {
+    'dec-count': function () { saveNames(); if (UI.count > 5) { UI.count--; renderSetup(); } },
+    'inc-count': function () { saveNames(); if (UI.count < 10) { UI.count++; renderSetup(); } },
+    'start': function () { startGame(); },
+    'show-rules': function () { openModal(rulesHtml()); },
+    'show-about': function () { openModal(aboutHtml()); },
+    'show-log': function () {
+      openModal('<h3>📜 对局日志</h3><ul class="log-list">' +
+        UI.S.log.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>');
+    },
+    'close-modal': function (d, el, e) {
+      // 点“关闭”按钮，或点遮罩空白处时关闭；弹窗内容区点击不关闭
+      if (el.classList.contains('btn') || e.target.classList.contains('modal-mask')) closeModal();
+    },
+    'handoff-confirm': function () { var cb = UI.data.cb; UI.data = {}; cb && cb(); },
+    'role-ack': function () { UI.revealIdx++; revealStep(); },
+    'toggle-player': function (d) { togglePlayer(+d.idx); },
+    'confirm-team': function () { confirmTeam(); },
+    'vote-cast': function (d) { castVote(d.v === '1'); },
+    'vote-result-continue': function () { afterVoteResult(); },
+    'mission-cast': function (d) { castMission(d.v === '1'); },
+    'mission-result-continue': function () { afterMissionResult(); },
+    'pick-target': function (d) { setScreen('assassinate', { target: +d.idx }); },
+    'confirm-assassin': function () {
+      var S = UI.S;
+      var t = UI.data.target;
+      if (t == null) { toast('请先选择要指认的玩家'); return; }
+      var p = S.players[t];
+      openModal('<h3>🗡️ 确认刺杀</h3><p style="font-size:16px">确定指认 <b style="color:var(--gold2)">' + esc(p.name) +
+        '</b> 为梅林？<br><span class="muted small">确认后立即揭晓结果</span></p>' +
+        '<button class="btn evil" data-action="do-assassin" data-idx="' + t + '">确定指认</button>');
+    },
+    'do-assassin': function (d) {
+      closeModal();
+      var r = C.assassinate(UI.S, +d.idx);
+      if (!r.ok) { toast(r.error); return; }
+      renderAssassinVerdict();
+    },
+    'verdict-continue': function () { renderGameOver(); },
+    'restart-same': function () {
+      var names = UI.S.players.map(function (p) { return p.name; });
+      UI.names = names;
+      UI.S = C.createGame(names);
+      UI.revealIdx = 0;
+      revealStep();
+    },
+    'back-setup': function () { UI.S = null; setScreen('setup'); }
+  };
+
+  app.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var fn = ACTIONS[el.dataset.action];
+    if (fn) fn(el.dataset, el, e);
+  });
+  app.addEventListener('input', function (e) {
+    if (e.target.dataset.nameIdx != null) UI.names[+e.target.dataset.nameIdx] = e.target.value;
+  });
+  modalRoot.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var fn = ACTIONS[el.dataset.action];
+    if (fn) fn(el.dataset, el, e);
+  });
+
+  function saveNames() {
+    var inputs = app.querySelectorAll('input[data-name-idx]');
+    inputs.forEach(function (inp) { UI.names[+inp.dataset.nameIdx] = inp.value; });
+  }
+
+  /* ================= 启动 ================= */
+  function render() {
+    switch (UI.screen) {
+      case 'setup': return renderSetup();
+      case 'handoff':
+        app.innerHTML =
+          '<div class="handoff"><div class="pass-tip">请把设备交给</div>' +
+          '<div class="device">📱➡️</div><div class="big-name serif">' + esc(UI.data.name) + '</div>' +
+          '<div class="muted small" style="margin-bottom:16px">' + esc(UI.data.hint || '') + '</div>' +
+          '<button class="btn" data-action="handoff-confirm">' + esc(UI.data.actionLabel || '继续') + '</button>' +
+          '<div class="small muted" style="margin-top:12px">其他人请稍作回避，保护隐私信息</div></div>';
+        return;
+      case 'reveal': return renderReveal();
+      case 'board': return renderBoard();
+      case 'vote': return renderVote();
+      case 'mission': return renderMission();
+      case 'assassinate': return renderAssassinate();
+      default: return renderSetup();
+    }
+  }
+  render();
+})();
+</script>
+</body>
+</html>
