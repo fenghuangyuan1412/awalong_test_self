@@ -17,3 +17,13 @@ avalon-cs/**/obj/
 avalon-cs/.vs/
 # 团结引擎下载与安装包（不入库）
 _tuanjie_dl/
+
+# 团结引擎（Unity）工程生成物（不入库）
+avalon-unity/Library/
+avalon-unity/Temp/
+avalon-unity/Obj/
+avalon-unity/Logs/
+avalon-unity/UserSettings/
+avalon-unity/build/
+*.csproj
+*.sln

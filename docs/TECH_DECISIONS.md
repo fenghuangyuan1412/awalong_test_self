@@ -27,17 +27,23 @@
 - 数据驱动：角色表/任务表全部集中在数据对象，禁止流程代码硬编码规则数字
 - minSdk 24 ✅；完全离线、不申请任何权限（隐私合规天然满足）
 
-## D2 · 正式版引擎路线（状态：待用户环境就绪）
+## D2 · 正式版引擎路线（状态：已落地，2026-09-19）
 
-**决策**：正式版按提示词采用 Unity（2022.3 LTS 或 Unity 6）+ C#。
+**决策**：正式版按提示词采用 Unity（团结引擎 1.6.13 = Unity 2022.3.61t14）+ C#。
 
-**前置条件**（需用户参与）：
-1. 安装 Unity Hub + Editor（含 Android Build Support: SDK/NDK/JDK）
-2. Unity 账号登录激活许可（交互式）
-3. 之后按 Phase 0（GDD 已就绪）→ Phase 1（core.js → C# Core 移植 + NUnit）推进
+**环境事实（本机验证）**：
+1. 编辑器：`D:\ai\Editor\Editor\Tuanjie.exe`（注：外层 `D:\ai\Editor` 为早期不完整安装，缺包管理器 Server，勿用）
+2. 许可：Cowork 账号内的 "Unity Personal" 许可证（2026-09-19 激活，到期自动续），batchmode 可用
+3. Android 工具链：AndroidPlayer（含 NDK r23b / OpenJDK 11，已展平目录）+ 工作区 `android-sdk`（build-tools 34 / platform 34）
+4. 已知坑：`cmdline-tools` 的 sdkmanager 需 Java 17+，已在 `android-sdk/cmdline-tools/latest/bin/sdkmanager.bat` 内固定 `JAVA_HOME=D:\programme\java`；
+   Gradle 依赖走 `~/.gradle/init.d/mirror.gradle` 阿里云镜像，否则海外源超时
+5. 语言级别 C# 9（勿用 C# 10 的对象初始化器冒号语法）
 
-**当前 APK 与正式版的关系**：当前 APK 即 Phase 2（本地热座）的可玩交付物；
-Unity 版完成后，热座玩法交互设计（传递确认页、双轨道、私密出票流程）可直接复用。
+**代码组织**：`_unity_staging/`（入库单一事实来源）→ `sync_unity.py` → `avalon-unity/`（引擎工程，Library 等生成物不入库）。
+构建命令：`Tuanjie.exe -batchmode -executeMethod Avalon.EditorTools.BuildScript.BuildAndroid`。
+
+**当前 APK 与正式版的关系**：`avalon-preview` 的 H5 APK（v0.2.0）为热座玩法先行验证；
+Unity 版 `release/avalon-unity-debug.apk` 为 Phase 2 交付物，热座交互设计（传递确认页、双轨道、私密出票）已 1:1 移植。
 
 ## D3 · 联机方案（状态：沿用提示词，Phase 4 前最终确认）
 

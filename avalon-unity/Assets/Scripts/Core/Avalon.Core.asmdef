@@ -1,0 +1,6 @@
+{
+    "name": "Avalon.Core",
+    "rootNamespace": "Avalon.Core",
+    "references": [],
+    "noEngineReferences": true
+}

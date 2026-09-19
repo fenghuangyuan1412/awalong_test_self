@@ -1,0 +1,6 @@
+{
+    "name": "Avalon.Editor",
+    "rootNamespace": "Avalon.Editor",
+    "references": ["Avalon.Core", "Avalon.Game", "Avalon.UI"],
+    "includePlatforms": ["Editor"]
+}

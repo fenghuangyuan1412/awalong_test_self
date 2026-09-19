@@ -1,0 +1,5 @@
+{
+    "name": "Avalon.UI",
+    "rootNamespace": "Avalon.UI",
+    "references": ["Avalon.Core", "Avalon.Game"]
+}
