@@ -7,11 +7,12 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Avalon.Core;
 using Avalon.Game;
+using Avalon.Networking;
 
 namespace Avalon.UI
 {
     /// <summary>
-    /// 热座界面（Phase 2）：纯代码构建 UGUI，屏幕流转完全由 GameSession 步骤驱动。
+    /// 主界面：纯代码构建 UGUI，屏幕流转由会话步骤（热座 GameSession / 联机 NetSession）驱动。
     /// 本层只做展示与输入，不含任何规则判断。
     /// </summary>
     public sealed class UIApp : MonoBehaviour
@@ -38,7 +39,13 @@ namespace Avalon.UI
             }
         }
 
-        GameSession _ses;
+        ISession _ses;
+        GameSession _hot;
+        NetSession _net;
+        bool _online;
+        string _serverUrl = "";
+        string _roomCodeIn = "";
+        string _onlineName = "";
         Canvas _canvas;
         RectTransform _root;
         Font _font;
@@ -55,9 +62,10 @@ namespace Avalon.UI
 
         void Awake()
         {
-            _ses = new GameSession();
-            _ses.Changed += Rebuild;
-            _ses.Toast += ShowToast;
+            _hot = new GameSession();
+            _hot.Changed += Rebuild;
+            _hot.Toast += ShowToast;
+            _ses = _hot;
             BuildSkeleton();
             Rebuild();
         }
@@ -208,9 +216,12 @@ namespace Avalon.UI
 
         void Update()
         {
+            _net?.Tick();   // 联机：主线程排空网络队列（事件里会触发 Rebuild）
             if (_toast != null && _toast.gameObject.activeSelf && Time.unscaledTime > _toastUntil)
                 _toast.gameObject.SetActive(false);
         }
+
+        void OnDestroy() { _net?.BackToSetup(); }
 
         void Clear(RectTransform rt)
         {
@@ -243,18 +254,20 @@ namespace Avalon.UI
             switch (_ses.StepNow)
             {
                 case Step.Setup: ScreenSetup(); break;
+                case Step.Lobby: ScreenLobby(); break;
+                case Step.Waiting: ScreenWaiting(); break;
                 case Step.HandoffReveal:
                 case Step.HandoffPropose:
                 case Step.HandoffVote:
                 case Step.HandoffMission:
                 case Step.HandoffAssassinate: ScreenHandoff(); break;
                 case Step.Reveal: ScreenReveal(); break;
-                case Step.Propose: ScreenPropose(); break;
-                case Step.Vote: ScreenVote(); break;
+                case Step.Propose: if (_online) OnlineMeCard(); ScreenPropose(); break;
+                case Step.Vote: if (_online) OnlineMeCard(); ScreenVote(); break;
                 case Step.VoteResult: ScreenVoteResult(); break;
-                case Step.Mission: ScreenMission(); break;
+                case Step.Mission: if (_online) OnlineMeCard(); ScreenMission(); break;
                 case Step.MissionResult: ScreenMissionResult(); break;
-                case Step.Assassinate: ScreenAssassinate(); break;
+                case Step.Assassinate: if (_online) OnlineMeCard(); ScreenAssassinate(); break;
                 case Step.Verdict: ScreenVerdict(); break;
                 case Step.GameOver: ScreenGameOver(); break;
             }
@@ -271,6 +284,8 @@ namespace Avalon.UI
 
         void ScreenSetup()
         {
+            ModeRow();
+            if (_online) { ScreenSetupOnline(); return; }
             Title("UNITY 安卓版 · 本地热座预览");
             var card = AddCard(_content, true);
             AddText(card, "选择人数（5–10 人，一台设备轮流传递）", 13, Col.Muted, TextAnchor.MiddleCenter);
@@ -332,6 +347,160 @@ namespace Avalon.UI
             var names = new List<string>();
             for (int i = 0; i < _count; i++) names.Add(string.IsNullOrWhiteSpace(_names[i]) ? "玩家" + (i + 1) : _names[i].Trim());
             _ses.StartGame(names);
+        }
+
+        /* ================= 联机：模式切换 / 大厅 / 等待 / 身份卡 ================= */
+
+        void ModeRow()
+        {
+            var row = NewRect(_content, "ModeRow");
+            var hlg = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 10; hlg.childControlWidth = true; hlg.childForceExpandWidth = true;
+            AddButton(row, "本地热座", 15, _online ? Col.Panel2 : Col.Gold,
+                _online ? Col.Muted : new Color(0.11f, 0.1f, 0.06f), () => SetMode(false));
+            AddButton(row, "联机房间", 15, _online ? Col.Gold : Col.Panel2,
+                _online ? new Color(0.11f, 0.1f, 0.06f) : Col.Muted, () => SetMode(true));
+        }
+
+        void SetMode(bool online)
+        {
+            if (_online == online) return;
+            _online = online;
+            if (!online)
+            {
+                _net?.BackToSetup();
+                _net = null;
+                _ses = _hot;
+            }
+            Rebuild();
+        }
+
+        InputField MakeField(RectTransform parent, string label, string initial, Action<string> commit)
+        {
+            AddText(parent, label, 13, Col.Muted);
+            var frt = NewRect(parent, "F");
+            frt.gameObject.AddComponent<LayoutElement>().minHeight = 46;
+            var inp = frt.gameObject.AddComponent<InputField>();
+            frt.gameObject.AddComponent<Image>().color = Col.Panel2;
+            var io = frt.gameObject.AddComponent<Outline>();
+            io.effectColor = Col.Line; io.effectDistance = new Vector2(1, -1);
+            var it = Stretch(NewRect(frt, "IT")).gameObject.AddComponent<Text>();
+            it.font = _font; it.fontSize = 15; it.color = Col.Text; it.alignment = TextAnchor.MiddleLeft;
+            inp.text = initial; inp.textComponent = it;
+            inp.onValueChanged.AddListener(v => commit(v));
+            return inp;
+        }
+
+        void ScreenSetupOnline()
+        {
+            Title("UNITY 联机版 · " + (_net == null ? "未连接" : _net.LinkState));
+            var card = AddCard(_content, true);
+            AddText(card, "连接自建权威服务器（WebSocket）·建房后把 6 位房间码告诉朋友", 13, Col.Muted, TextAnchor.MiddleCenter);
+            MakeField(card, "服务器地址（如 ws://192.168.1.10:8080）", _serverUrl, v => _serverUrl = v);
+            MakeField(card, "我的昵称（≤8 字）", _onlineName, v => _onlineName = v);
+            AddButton(card, "创建房间", 17, Col.Gold, new Color(0.11f, 0.1f, 0.06f), () =>
+                GoOnline(() => _net.Create(_serverUrl, _onlineName)));
+            var jr = NewRect(card, "JoinRow");
+            var hlg = jr.gameObject.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 8; hlg.childControlWidth = true; hlg.childForceExpandWidth = false;
+            var codeIn = MakeField(jr, "房间码", _roomCodeIn, v => _roomCodeIn = v.ToUpperInvariant());
+            var cle = codeIn.gameObject.AddComponent<LayoutElement>();
+            cle.minWidth = 200; cle.flexibleWidth = 1;
+            var jb = AddButton(jr, "加入房间", 15, Col.Panel2, Col.Gold2, () =>
+            {
+                if (string.IsNullOrWhiteSpace(_roomCodeIn)) { ShowToast("请先填写房间码"); return; }
+                GoOnline(() => _net.Join(_serverUrl, _roomCodeIn, _onlineName));
+            });
+            var jle = jb.gameObject.AddComponent<LayoutElement>(); jle.minWidth = 120;
+            AddText(card, "提示：Android 明文 ws:// 需在端上放行；联调建议先用有线网同段地址", 11, Col.Muted);
+        }
+
+        void GoOnline(Action act)
+        {
+            if (string.IsNullOrWhiteSpace(_serverUrl)) { ShowToast("请先填写服务器地址"); return; }
+            if (_net == null)
+            {
+                _net = new NetSession();
+                _net.Changed += Rebuild;
+                _net.Toast += ShowToast;
+            }
+            _ses = _net;
+            act();
+            Rebuild();
+        }
+
+        void ScreenLobby()
+        {
+            Title("联机房间 · 大厅（等待开局）");
+            var card = AddCard(_content, true);
+            AddText(card, "房间码", 13, Col.Muted, TextAnchor.MiddleCenter);
+            AddText(card, _net.RoomCode, 44, Col.Gold2, TextAnchor.MiddleCenter)
+                .gameObject.AddComponent<LayoutElement>().minHeight = 56;
+            AddText(card, _net.LinkState, 12, Col.Muted, TextAnchor.MiddleCenter);
+            var sep = NewRect(card, "Sep"); sep.sizeDelta = new Vector2(0, 1);
+            sep.gameObject.AddComponent<LayoutElement>().minHeight = 1;
+            sep.gameObject.AddComponent<Image>().color = Col.Line;
+            int joined = _net.LobbyNames.Count(n => n != null);
+            AddText(card, "玩家名单（" + joined + "/10 · 需 5–10 人，房主可开局）", 13, Col.Gold2);
+            for (int i = 0; i < _net.LobbyNames.Count; i++)
+            {
+                var nm = _net.LobbyNames[i];
+                if (nm == null) continue;
+                string mine = i == _net.Seat ? "（你）" : "";
+                string host = i == 0 ? "（房主）" : "";
+                AddText(card, "座位 " + (i + 1) + "　" + nm + host + mine, 15,
+                    i == _net.Seat ? Col.Gold2 : Col.Text);
+            }
+            if (_net.IsHost)
+                AddButton(_content, "开始游戏", 17, Col.Gold, new Color(0.11f, 0.1f, 0.06f),
+                    () => _net.StartGame(null));
+            else
+                AddText(_content, "等待房主点击开始…", 13, Col.Muted, TextAnchor.MiddleCenter);
+            AddButton(_content, "离开房间", 15, Col.Panel2, Col.Muted, () => _net.BackToSetup(), true);
+        }
+
+        void ScreenWaiting()
+        {
+            var S = _ses.S;
+            if (S == null) { Title("联机对局"); return; }
+            TopBar();
+            OnlineMeCard();
+            var card = AddCard(_content, true);
+            var who = _ses.HandSeat >= 0 && _ses.HandSeat < S.Players.Count ? S.Players[_ses.HandSeat].Name : "？";
+            AddText(card, "等待 " + who + " 操作中…", 22, Col.Gold2, TextAnchor.MiddleCenter)
+                .gameObject.AddComponent<LayoutElement>().minHeight = 44;
+            AddText(card, _ses.HandHint, 13, Col.Muted, TextAnchor.MiddleCenter);
+            if (_net.WaitingSeat >= 0 && _net.WaitingSeat < S.Players.Count)
+                AddText(card, "⚠ " + S.Players[_net.WaitingSeat].Name + " 断线，房间已暂停等待重连", 14, Col.Evil2, TextAnchor.MiddleCenter);
+            if (S.Phase == Phase.Vote && S.Proposal != null)
+                AddText(card, "当前提名：" + string.Join("、", S.Proposal.Select(i => S.Players[i].Name)),
+                    15, Col.Text, TextAnchor.MiddleCenter);
+            AddText(card, "最新日志", 13, Col.Gold2);
+            for (int i = Math.Max(0, S.Log.Count - 5); i < S.Log.Count; i++)
+                AddText(card, "· " + S.Log[i], 12, Col.Muted);
+        }
+
+        void OnlineMeCard()
+        {
+            var S = _ses.S;
+            if (S == null || _net == null || _net.Seat < 0 || _net.Seat >= S.Players.Count) return;
+            var p = S.Players[_net.Seat];
+            var ro = Rules.Roles[p.Role];
+            var card = AddCard(_content);
+            var row = NewRect(card, "MeRow");
+            var hlg = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 10; hlg.childAlignment = TextAnchor.MiddleLeft;
+            hlg.childControlWidth = true; hlg.childControlHeight = true; hlg.childForceExpandWidth = false;
+            AddRoleBadge(row, p.Role, 40);
+            AddText(row, "你是 " + ro.Name + "（" + (ro.Team == Team.Good ? "蓝方·好人" : "红方·坏人") + "）　房间 " + _net.RoomCode,
+                15, ro.Team == Team.Good ? Col.Good2 : Col.Evil2, TextAnchor.MiddleLeft);
+            var vis = _net.VisionOfCurrent;
+            if (vis != null)
+                foreach (var k in vis)
+                {
+                    string tag = k.Kind == "evil" ? "坏人" : k.Kind == "ally" ? "同伴" : "梅林？莫甘娜？";
+                    AddText(card, "· 你的视野 " + tag + "：" + k.Name, 12, Col.Muted);
+                }
         }
 
         void ScreenHandoff()
@@ -636,7 +805,8 @@ namespace Avalon.UI
                     ro.Team == Team.Good ? Col.Good2 : Col.Evil2);
             }
             AddTracks(card);
-            AddButton(_content, "同样玩家再来一局", 17, Col.Gold, new Color(0.11f, 0.1f, 0.06f), () => _ses.RestartSame());
+            if (!_online || (_net != null && _net.IsHost))
+                AddButton(_content, "同样玩家再来一局", 17, Col.Gold, new Color(0.11f, 0.1f, 0.06f), () => _ses.RestartSame());
             AddButton(_content, "返回设置", 15, Col.Panel2, Col.Muted, () => _ses.BackToSetup(), true);
         }
 

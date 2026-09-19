@@ -105,7 +105,10 @@ function buildView(room, seat) {
     v.voteProgress = st.votes.length;
     v.voteOrder = st.voteOrder;
   }
-  if (st.phase === 'mission') v.missionProgress = st.missionVotes.length;
+  if (st.phase === 'mission') {
+    v.missionProgress = st.missionVotes.length;
+    v.missionOrder = st.missionOrder; // 队伍名单在提案通过时即公开
+  }
   if (st.phase !== 'over') v.actorSeat = actorSeatOf(st);
 
   const me = { seat, name: st.players[seat].name };
@@ -131,6 +134,19 @@ function broadcast(room) {
   const seats = activeSeats(room);
   for (const s of seats) send(room.seats[s].ws, buildView(room, s));
   armTimeout(room);
+}
+
+/* 未开局的花名册广播（联机大厅界面用） */
+function lobbyMsg(room) {
+  const players = [];
+  for (let i = 0; i < room.seats.length; i++)
+    players.push(room.seats[i] ? { seat: i, name: room.seats[i].name, online: !!room.seats[i].ws } : null);
+  return { t: 'lobby', players, started: room.started };
+}
+
+function broadcastLobby(room) {
+  const m = lobbyMsg(room); // send() 统一做 JSON 编码，这里不要提前 stringify
+  for (const s of activeSeats(room)) send(room.seats[s].ws, m);
 }
 
 /* ---------------- 超时默认行动（§4） ---------------- */
@@ -181,7 +197,8 @@ function handle(ws, msg) {
       if (ctx.room) return send(ws, { t: 'toast', error: '你已在房间中' });
       const room = createRoom();
       joinSeat(ws, room, 0, msg.name);
-      return send(ws, { t: 'welcome', code: room.code, seat: 0, token: room.seats[0].token });
+      send(ws, { t: 'welcome', code: room.code, seat: 0, token: room.seats[0].token });
+      return broadcastLobby(room);
     }
     case 'join': {
       if (ctx.room) return send(ws, { t: 'toast', error: '你已在房间中' });
@@ -192,7 +209,8 @@ function handle(ws, msg) {
       if (seat >= 10) return send(ws, { t: 'toast', error: '房间已满' });
       if (!checkSeatOrder(room, seat)) return send(ws, { t: 'toast', error: '座位异常' });
       joinSeat(ws, room, seat, msg.name);
-      return send(ws, { t: 'welcome', code: room.code, seat, token: room.seats[seat].token });
+      send(ws, { t: 'welcome', code: room.code, seat, token: room.seats[seat].token });
+      return broadcastLobby(room);
     }
     case 'reconnect': {
       const room = rooms.get(String(msg.code || '').toUpperCase());
@@ -310,7 +328,7 @@ function leaveSeat(room, seat) {
       room.seats[i] = entry;
       if (entry.ws && entry.ws._avalon) entry.ws._avalon.seat = i;
     });
-    return;
+    return broadcastLobby(room);
   }
   s.ws = null;
   if (room.state && room.state.phase !== 'over') room.pausedFor = seat; // 开局后等待重连

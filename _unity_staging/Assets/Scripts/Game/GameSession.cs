@@ -4,13 +4,41 @@ using Avalon.Core;
 
 namespace Avalon.Game
 {
-    public enum Step { Setup, HandoffReveal, Reveal, HandoffPropose, Propose, HandoffVote, Vote, VoteResult, HandoffMission, Mission, MissionResult, HandoffAssassinate, Assassinate, Verdict, GameOver }
+    public enum Step { Setup, Lobby, HandoffReveal, Reveal, HandoffPropose, Propose, HandoffVote, Vote, VoteResult, HandoffMission, Mission, MissionResult, HandoffAssassinate, Assassinate, Verdict, GameOver, Waiting }
+
+    /// <summary>UI 面向的会话契约：热座 GameSession 与联机 NetSession 共同实现。</summary>
+    public interface ISession
+    {
+        GameState S { get; }
+        Step StepNow { get; }
+        int HandSeat { get; }
+        string HandHint { get; }
+        string HandLabel { get; }
+        IReadOnlyList<VisionItem> VisionOfCurrent { get; }
+        event Action Changed;
+        event Action<string> Toast;
+        void Say(string msg);
+        void Raise();
+
+        void StartGame(IList<string> names, int? seed = null);
+        void ConfirmHandoff();
+        void AckRole();
+        void Propose(IList<int> members);
+        void CastVote(bool approve);
+        void ContinueAfterVoteResult();
+        void CastMission(bool success);
+        void ContinueAfterMissionResult();
+        void Assassinate(int target);
+        void ContinueAfterVerdict();
+        void RestartSame();
+        void BackToSetup();
+    }
 
     /// <summary>
     /// 热座会话粘合层：持有 Core 状态机，推进“传递设备”节奏，向 UI 发事件。
     /// 规则一律委托 Avalon.Core，本层不含任何规则判断。
     /// </summary>
-    public sealed class GameSession
+    public sealed class GameSession : ISession
     {
         public GameState S { get; private set; }
         public Step StepNow { get; private set; } = Step.Setup;

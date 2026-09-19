@@ -133,6 +133,8 @@ async function main() {
     await c[i].waitMsg((m) => m.t === 'welcome', 'welcome' + i);
     assert(c[i].seat === i, '玩家 ' + i + ' 落在座位 ' + i);
   }
+  const lb = await c[4].waitMsg((m) => m.t === 'lobby' && m.players.filter(Boolean).length === 5, 'lobby 名单');
+  assert(lb.players.filter(Boolean).every((p, i) => p.name === NAMES[i]), '大厅花名册广播 5 人齐全');
 
   // ---- 开局（同种子），随后立刻做越权/断连测试 ----
   const ref = referenceRun();

@@ -39,7 +39,8 @@ python -m http.server 8000   # 访问 http://localhost:8000/
 - ✅ **Phase 1（规则引擎）**：`avalon-preview/core.js`，测试 `test/simulate.js`；C# 移植 `avalon-cs/`（NUnit 33/33 全绿）
 - ✅ **Phase 2（热座界面 + APK）**：H5 全流程 + 安卓壳；**Unity 版**：`avalon-unity/`（Core/Game/UI 分层 + 运行时 UGUI）已出 `release/avalon-unity-debug.apk`
 - 🟨 **Phase 3（美术音频）**：首批原创矢量立绘/贴图已上线（`art.js`）；音频与 AI 插画待 API Key 就绪
-- ⏸ **Phase 4 联机**：下一阶段（方案对比见 TECH_DECISIONS D3）
+- 🟨 **Phase 4 联机**：WebSocket 权威服务器（`avalon-server/`）与 Unity 联机客户端（NetSession/大厅/断线重连）已实现，
+  模拟对局与真会话烟雾测试全绿；待部署云服务器 + 双真机验证（方案见 docs/NETPLAY.md）
 - ⬜ Phase 5 打磨 / Phase 6 上架
 
 Unity 正式版环境已落地（团结引擎 1.6.13 + Personal 许可 + Android 工具链），构建方式见 TECH_DECISIONS D2。

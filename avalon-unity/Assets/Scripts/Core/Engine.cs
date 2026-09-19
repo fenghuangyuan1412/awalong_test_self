@@ -10,7 +10,7 @@ namespace Avalon.Core
     public sealed class PlayerState
     {
         public string Name { get; }
-        public RoleId Role { get; internal set; }
+        public RoleId Role { get; set; }   // Networking 组装联机视图时需要赋值
         public PlayerState(string name) { Name = name; }
     }
 

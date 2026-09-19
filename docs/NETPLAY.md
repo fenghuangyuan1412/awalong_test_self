@@ -33,6 +33,7 @@ Unity 客户端(×N) ── WebSocket(JSON) ── Node 权威服务器（云服
 | C→S | `restart` / `leave` | 同配置重开 / 退出 |
 | C→S | `reconnect` | `{code,seat,token}` 断线重连 |
 | S→C | `welcome` | `{code,seat,token}` token 用于重连鉴权 |
+| S→C | `lobby` | 未开局花名册 `{players:[{seat,name,online}|null], started}`（建房/进房/离座时广播） |
 | S→C | `state` | 该座位的过滤视图（见 §3） |
 | S→C | `toast` | 校验失败等即时错误（不改变状态） |
 
@@ -41,6 +42,8 @@ Unity 客户端(×N) ── WebSocket(JSON) ── Node 权威服务器（云服
 ```
 公共：phase/step、round、voteTrack、leader、proposal(公开)、results、failCards、
       history、log、players[{seat,name}]（无 role）、当前该谁行动 actorSeat
+      quest(本轮需上人数)、vote 期 voteOrder/voteProgress、mission 期 missionOrder/missionProgress、
+      waiting(断线等待座位号，无则 null)
 私有：me.seat、me.role（仅开局一次）、me.known（knownInfo 结果）
 终局：over 时下发全量 players[].role 用于结算页
 刺杀：仅刺客收到 target 可选列表提示；其他人只见"刺杀阶段进行中"
@@ -59,15 +62,19 @@ Unity 客户端(×N) ── WebSocket(JSON) ── Node 权威服务器（云服
 - 明文 `ws://` 起步（局域网/内网测试）；公网建议 Nginx/Caddy 反代加 `wss://`（证书 Let's Encrypt）。
 - 客户端服务器地址：设置页输入框 + 记住上次（默认 `ws://<host>:<port>`）。
 
-## 6. Unity 客户端改动
+## 6. Unity 客户端改动（2026-09-19 已实现）
 
-- 新增 `Avalon.Networking` asmdef（引用 Core/Game；传输用 `System.Net.WebSockets.ClientWebSocket`，零第三方包）。
-- `GameSession` 已把"规则调用"全部收敛到 Engine——联机版新增 `NetSession`：
-  本地热座走 Engine，联机走"发送意图 + 收到 state 视图后重建 UI 步骤机"，UIApp 基本不改。
-- 设置页加模式选择：热座（现状）/ 联机（建房·加房）。
+- 新增 `Avalon.Networking` asmdef（引用 Core/Game；传输用 `System.Net.WebSockets.ClientWebSocket`，零第三方包）：
+  `NetJson`（极简 JSON 编解码）+ `NetSession`（ISession 实现，后台线程收发、`Tick()` 主线程排空）。
+- `Game` 层新增 `ISession` 契约：热座 `GameSession` 与联机 `NetSession` 同接口驱动 UIApp；
+  NetSession 把 state 视图重建为 `GameState`（私密位以占位计数还原，他人 role 除非终局否则不下发）。
+- 设置页模式选择：本地热座 / 联机房间（服务器地址+昵称建房、房间码加房）；新增大厅页（房间码/名单/房主开局）
+  与等待页（当前行动者、断线提示、最新日志）；对局中常驻"我的身份"卡；断线 3s 自动带 token 重连。
 
 ## 7. 验收（Phase 4 门）
 
-1. 服务端自测脚本：3 个模拟客户端跑通一整局（含刺杀），断言与 core.js 直跑结果一致。
-2. 云服务器部署后，两台真机联机完成一局 5 人局。
-3. 抓包验证：任何客户端收不到非自己视角的身份字段。
+1. ✅ 服务端自测：5 模拟客户端整局（含刺杀）与 core.js 同种子直跑 parity、全程隐私断言、
+   越权拒绝、断线重连、超时默认行动、离座收拢 —— `avalon-server/test/sim.js` 全绿。
+   另加 `avalon-cs/NetSmoke`：真实 NetSession（Unity 同一份源码）× 本地 node 服 5 客户端整局烟雾测试通过。
+2. ⏳ 云服务器部署后，两台真机联机完成一局 5 人局（待服务器信息与设备）。
+3. ⏳ 抓包验证：任何客户端收不到非自己视角的身份字段（sim 已做进程内断言，抓包复核待部署后）。

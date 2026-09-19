@@ -1,0 +1,6 @@
+{
+    "name": "Avalon.Networking",
+    "rootNamespace": "Avalon.Networking",
+    "references": ["Avalon.Core", "Avalon.Game"],
+    "noEngineReferences": true
+}

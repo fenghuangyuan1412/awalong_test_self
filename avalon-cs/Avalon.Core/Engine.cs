@@ -10,7 +10,7 @@ namespace Avalon.Core
     public sealed class PlayerState
     {
         public string Name { get; }
-        public RoleId Role { get; internal set; }
+        public RoleId Role { get; set; }
         public PlayerState(string name) { Name = name; }
     }
 
