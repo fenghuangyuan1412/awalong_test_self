@@ -19,7 +19,7 @@ def step(msg):
 # 1. 同步游戏文件到 assets（单一事实来源：avalon-preview/）
 step("同步游戏文件到 assets")
 assets.mkdir(parents=True, exist_ok=True)
-for f in ("index.html", "core.js"):
+for f in ("index.html", "core.js", "art.js"):
     shutil.copy2(preview / f, assets / f)
     print("  copied", f)
 
@@ -42,10 +42,12 @@ if r.returncode != 0:
     sys.exit(r.returncode)
 
 # 4. 复制产物
+VERSION = "0.2.0"
+
 step("复制 APK 到 release/")
 out_dir = root / "release"
 out_dir.mkdir(exist_ok=True)
 apk_src = proj / "app" / "build" / "outputs" / "apk" / "debug" / "app-debug.apk"
-apk_dst = out_dir / "avalon-v0.1.0-debug.apk"
+apk_dst = out_dir / f"avalon-v{VERSION}-debug.apk"
 shutil.copy2(apk_src, apk_dst)
 print("APK:", apk_dst, f"({apk_dst.stat().st_size / 1024:.0f} KB)")

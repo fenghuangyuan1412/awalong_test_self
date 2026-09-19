@@ -132,7 +132,10 @@
     return out;
   }
 
-  /* ---------------- 组队提案 ---------------- */
+  /* ---------------- 组队提案 ----------------
+   * 房规（用户指定，2026-09-19）：队长可以不将自己编入队伍。
+   * 官方规则要求队长必须在队内；此偏差已记录于 docs/GDD.md「房规记录」。
+   */
   function proposeTeam(st, members) {
     if (st.phase !== 'propose') return err('当前阶段不能组队');
     var q = questOf(st);
@@ -144,7 +147,6 @@
       if (seen[m]) return err('队员重复');
       seen[m] = true;
     }
-    if (!seen[st.leader]) return err('队长必须在队伍中');
     var sorted = members.slice().sort(function (a, b) { return a - b; });
     st.proposal = { leader: st.leader, members: sorted };
     st.phase = 'vote';

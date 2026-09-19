@@ -87,6 +87,17 @@
   // 忠臣：无视野
   check(C.knownInfo(st10, byRole.servant[0]).length === 0, '忠臣应无视野');
 
+  /* ---------- 2.5 房规：队长可以不将自己编入队伍 ---------- */
+  (function () {
+    var st = C.createGame(names(5), 100);
+    var q = C.questOf(st);
+    var members = [];
+    for (var i = 0; i < q.size; i++) members.push((st.leader + 1 + i) % st.n);
+    check(members.indexOf(st.leader) < 0, '测试构造错误：队伍应不含队长');
+    var r = C.proposeTeam(st, members);
+    check(r.ok, '房规：队长不在队内的组队应被接受，实际：' + (r.error || ''));
+  })();
+
   /* ---------- 3. 强制场景：连续否决 5 次 → 坏人胜 ---------- */
   (function () {
     var st = C.createGame(names(5), 42);
@@ -140,15 +151,17 @@
       if (++guard > 5000) throw new Error('游戏未收敛（seed=' + seed + ', n=' + n + '）');
       if (st.phase === 'propose') {
         var q = C.questOf(st);
-        var members = [st.leader];
         var others = [];
         for (var i = 0; i < st.n; i++) if (i !== st.leader) others.push(i);
-        // 洗牌取前 size-1
+        // 洗牌取前 k
         for (var k = others.length - 1; k > 0; k--) {
           var j = Math.floor(rng() * (k + 1));
           var t = others[k]; others[k] = others[j]; others[j] = t;
         }
-        members = members.concat(others.slice(0, q.size - 1));
+        // 房规：30% 的提案不包含队长本人
+        var includeLeader = rng() < 0.7;
+        var need = includeLeader ? q.size - 1 : q.size;
+        var members = (includeLeader ? [st.leader] : []).concat(others.slice(0, need));
         var r = C.proposeTeam(st, members);
         check(r.ok, '模拟组队失败（seed=' + seed + '）：' + (r.error || ''));
       } else if (st.phase === 'vote') {

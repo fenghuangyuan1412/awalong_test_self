@@ -35,6 +35,7 @@ python -m http.server 8000
 avalon-preview/
 ├── index.html               # 主页面（UI 层，含样式与界面流程）
 ├── core.js                  # 规则引擎（纯 JS、零 DOM 依赖、数据驱动）
+├── art.js                   # 原创矢量美术（角色徽章立绘 / UI 图标 / 纹理）
 ├── avalon-standalone.html   # 单文件分发版（build.py 自动生成，分享这个即可）
 ├── build.py                 # 构建单文件版：python build.py
 └── test/

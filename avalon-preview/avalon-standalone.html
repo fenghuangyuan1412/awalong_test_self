@@ -30,7 +30,12 @@
     min-height: 100vh; min-height: 100dvh;
     touch-action: manipulation;
   }
-  #app { max-width: 560px; margin: 0 auto; padding: 16px 14px calc(24px + env(safe-area-inset-bottom)); }
+  #app { max-width: 560px; margin: 0 auto; padding: 16px 14px calc(24px + env(safe-area-inset-bottom)); position: relative; z-index: 1; }
+  /* 圆桌纹理背景（原创 SVG 纹样，极低透明度） */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='900'%3E%3Cg fill='none' stroke='%23D4AF37'%3E%3Ccircle cx='210' cy='265' r='148' stroke-opacity='0.055' stroke-width='2'/%3E%3Ccircle cx='210' cy='265' r='170' stroke-opacity='0.035' stroke-width='1.2'/%3E%3Ccircle cx='210' cy='265' r='190' stroke-opacity='0.02' stroke-width='1'/%3E%3C/g%3E%3Cg fill='%23D4AF37'%3E%3Ccircle cx='62' cy='118' r='1.4' fill-opacity='0.10'/%3E%3Ccircle cx='356' cy='86' r='1.1' fill-opacity='0.09'/%3E%3Ccircle cx='396' cy='420' r='1.3' fill-opacity='0.08'/%3E%3Ccircle cx='30' cy='520' r='1.2' fill-opacity='0.09'/%3E%3Ccircle cx='330' cy='700' r='1.4' fill-opacity='0.08'/%3E%3Ccircle cx='120' cy='820' r='1.1' fill-opacity='0.08'/%3E%3C/g%3E%3C/svg%3E") center top / 100% auto no-repeat;
+  }
   h1, h2, h3, .serif { font-family: Georgia, "Noto Serif SC", "Songti SC", serif; }
   .muted { color: var(--muted); }
   .small { font-size: 12px; }
@@ -95,7 +100,19 @@
   }
 
   /* ---------- 身份卡 ---------- */
-  .role-card { border-radius: 18px; padding: 26px 20px; text-align: center; border: 1px solid; }
+  .role-card { border-radius: 18px; padding: 26px 20px; text-align: center; border: 1px solid; position: relative; }
+  /* 金色四角花纹（原创角饰 SVG） */
+  .role-card::before {
+    content: ""; position: absolute; inset: 5px; border-radius: 14px; pointer-events: none;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 40 40'%3E%3Cpath d='M3 15 Q3 3 15 3' fill='none' stroke='%23D4AF37' stroke-width='2' stroke-opacity='.75'/%3E%3Cpath d='M3 25 Q3 7 25 3' fill='none' stroke='%23D4AF37' stroke-width='1.4' stroke-opacity='.45'/%3E%3Ccircle cx='6.5' cy='6.5' r='1.8' fill='%23F0D98C' fill-opacity='.7'/%3E%3C/svg%3E") top left / 30px 30px no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 40 40'%3E%3Cpath d='M3 15 Q3 3 15 3' fill='none' stroke='%23D4AF37' stroke-width='2' stroke-opacity='.75'/%3E%3Cpath d='M3 25 Q3 7 25 3' fill='none' stroke='%23D4AF37' stroke-width='1.4' stroke-opacity='.45'/%3E%3Ccircle cx='6.5' cy='6.5' r='1.8' fill='%23F0D98C' fill-opacity='.7'/%3E%3C/svg%3E") top right / 30px 30px no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 40 40'%3E%3Cpath d='M3 15 Q3 3 15 3' fill='none' stroke='%23D4AF37' stroke-width='2' stroke-opacity='.75'/%3E%3Cpath d='M3 25 Q3 7 25 3' fill='none' stroke='%23D4AF37' stroke-width='1.4' stroke-opacity='.45'/%3E%3Ccircle cx='6.5' cy='6.5' r='1.8' fill='%23F0D98C' fill-opacity='.7'/%3E%3C/svg%3E") bottom left / 30px 30px no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 40 40'%3E%3Cpath d='M3 15 Q3 3 15 3' fill='none' stroke='%23D4AF37' stroke-width='2' stroke-opacity='.75'/%3E%3Cpath d='M3 25 Q3 7 25 3' fill='none' stroke='%23D4AF37' stroke-width='1.4' stroke-opacity='.45'/%3E%3Ccircle cx='6.5' cy='6.5' r='1.8' fill='%23F0D98C' fill-opacity='.7'/%3E%3C/svg%3E") bottom right / 30px 30px no-repeat;
+  }
+  .role-card > * { position: relative; z-index: 1; }
+  .role-card .art-box { height: 104px; display: flex; align-items: center; justify-content: center; margin: 4px 0 2px; }
+  .role-card .art-box .role-art { filter: drop-shadow(0 6px 16px rgba(0,0,0,.5)); }
   .role-card.good { background: linear-gradient(180deg, #22335f, #17203d); border-color: rgba(127,176,255,.5); }
   .role-card.evil { background: linear-gradient(180deg, #471f1f, #2b1518); border-color: rgba(224,112,96,.5); }
   .role-card .icon { font-size: 58px; }
@@ -367,7 +384,10 @@
     return out;
   }
 
-  /* ---------------- 组队提案 ---------------- */
+  /* ---------------- 组队提案 ----------------
+   * 房规（用户指定，2026-09-19）：队长可以不将自己编入队伍。
+   * 官方规则要求队长必须在队内；此偏差已记录于 docs/GDD.md「房规记录」。
+   */
   function proposeTeam(st, members) {
     if (st.phase !== 'propose') return err('当前阶段不能组队');
     var q = questOf(st);
@@ -379,7 +399,6 @@
       if (seen[m]) return err('队员重复');
       seen[m] = true;
     }
-    if (!seen[st.leader]) return err('队长必须在队伍中');
     var sorted = members.slice().sort(function (a, b) { return a - b; });
     st.proposal = { leader: st.leader, members: sorted };
     st.phase = 'vote';
@@ -532,6 +551,155 @@
 
 </script>
 <script>
+/*
+ * 阿瓦隆 · 统一矢量美术资产（原创绘制，零外部依赖）
+ * 风格：金色线稿徽章 + 队伍色渐变底盘（好人=蓝钢 / 坏人=绯红）
+ * 说明：全部为 SVG 矢量，可无损缩放；替换 Emoji 占位，对应 Phase 3 美术门禁
+ *      （风格统一 / 命名规范 / 无版权风险：本文件所有图形均为本项目原创）。
+ */
+var AvalonArt = (function () {
+  'use strict';
+
+  var GOLD_L = '#F0D98C', GOLD = '#D4AF37', GOLD_D = '#A8862A';
+  var TEAM = {
+    merlin: 'good', percival: 'good', servant: 'good',
+    assassin: 'evil', morgana: 'evil', mordred: 'evil', oberon: 'evil', minion: 'evil'
+  };
+  var NAMES = {
+    merlin: '梅林', percival: '派西维尔', servant: '亚瑟的忠臣',
+    assassin: '刺客', morgana: '莫甘娜', mordred: '莫德雷德', oberon: '奥伯伦', minion: '莫德雷德的爪牙'
+  };
+
+  var uid = 0;
+
+  function defs(team) {
+    uid++;
+    var gid = 'ag' + uid, did = 'ad' + uid;
+    var top = team === 'good' ? '#3E64B8' : '#8A312A';
+    var bot = team === 'good' ? '#141F42' : '#2C1013';
+    return '<defs>' +
+      '<linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">' +
+      '<stop offset="0%" stop-color="' + GOLD_L + '"/><stop offset="55%" stop-color="' + GOLD + '"/>' +
+      '<stop offset="100%" stop-color="' + GOLD_D + '"/></linearGradient>' +
+      '<radialGradient id="' + did + '" cx="60" cy="42" r="70" gradientUnits="userSpaceOnUse">' +
+      '<stop offset="0%" stop-color="' + top + '"/><stop offset="100%" stop-color="' + bot + '"/></radialGradient>' +
+      '</defs>';
+  }
+
+  function gold(id) { return 'url(#ag' + id + ')'; }
+
+  // 角色徽章立绘：viewBox 0 0 120 120
+  var EMBLEMS = {
+    merlin: function (g) { // 尖顶法帽 + 星辉
+      return '<path d="M60 15 L41 60 Q60 69 79 60 Z" fill="none" stroke="' + g + '" stroke-width="4.5" stroke-linejoin="round"/>' +
+        '<path d="M31 62 Q60 77 89 62" fill="none" stroke="' + g + '" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<path d="M60 32 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z" fill="' + g + '"/>' +
+        '<path d="M88 24 v9 M83.5 28.5 h9" stroke="' + g + '" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M30 82 v7 M26.5 85.5 h7" stroke="' + g + '" stroke-width="3" stroke-linecap="round" opacity=".85"/>';
+    },
+    percival: function (g) { // 鸢盾 + 人字纹
+      return '<path d="M60 17 L87 27 V55 Q87 81 60 97 Q33 81 33 55 V27 Z" fill="none" stroke="' + g + '" stroke-width="4.5" stroke-linejoin="round"/>' +
+        '<path d="M45 49 L60 63 L75 49" fill="none" stroke="' + g + '" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    },
+    servant: function (g) { // 交叉双剑
+      return '<path d="M41 29 L83 85" stroke="' + g + '" stroke-width="4.5" stroke-linecap="round"/>' +
+        '<path d="M35 41 L50 26" stroke="' + g + '" stroke-width="4.5" stroke-linecap="round"/>' +
+        '<circle cx="38.5" cy="25.5" r="3" fill="' + g + '"/>' +
+        '<path d="M79 29 L37 85" stroke="' + g + '" stroke-width="4.5" stroke-linecap="round"/>' +
+        '<path d="M70 26 L85 41" stroke="' + g + '" stroke-width="4.5" stroke-linecap="round"/>' +
+        '<circle cx="81.5" cy="25.5" r="3" fill="' + g + '"/>';
+    },
+    assassin: function (g) { // 短刃 + 血滴
+      return '<rect x="55" y="12" width="10" height="15" rx="3" fill="' + g + '"/>' +
+        '<path d="M44 31 L76 31" stroke="' + g + '" stroke-width="5" stroke-linecap="round"/>' +
+        '<path d="M52 34 L68 34 L64 59 L60 73 L56 59 Z" fill="' + g + '"/>' +
+        '<path d="M60 80 Q65.5 89 60 97 Q54.5 89 60 80 Z" fill="' + g + '"/>';
+    },
+    morgana: function (g) { // 新月 + 星（遮罩法挖出月牙）
+      return '<mask id="am' + uid + '"><rect width="120" height="120" fill="#fff"/>' +
+        '<circle cx="86" cy="50" r="31" fill="#000"/></mask>' +
+        '<circle cx="55" cy="62" r="34" fill="' + g + '" mask="url(#am' + uid + ')"/>' +
+        '<path d="M85 66 l3.2 7.3 7.3 3.2 -7.3 3.2 -3.2 7.3 -3.2 -7.3 -7.3 -3.2 7.3 -3.2 Z" fill="' + g + '"/>';
+    },
+    mordred: function (g) { // 骷髅
+      return '<path d="M60 21 Q85 21 85.5 46 Q86 60 76 67 L76 80 Q76 90 66 90 L54 90 Q44 90 44 80 L44 67 Q34 60 34.5 46 Q35 21 60 21 Z" fill="none" stroke="' + g + '" stroke-width="4" stroke-linejoin="round"/>' +
+        '<circle cx="49" cy="49" r="5.5" fill="' + g + '"/>' +
+        '<circle cx="71" cy="49" r="5.5" fill="' + g + '"/>' +
+        '<path d="M60 59 L55.5 68 L64.5 68 Z" fill="' + g + '"/>' +
+        '<path d="M52 77 v9 M60 77 v11 M68 77 v9" stroke="' + g + '" stroke-width="3.5" stroke-linecap="round"/>';
+    },
+    oberon: function (g) { // 之眼 + 射线
+      return '<path d="M25 62 Q60 35 95 62 Q60 89 25 62 Z" fill="none" stroke="' + g + '" stroke-width="4" stroke-linejoin="round"/>' +
+        '<circle cx="60" cy="62" r="11" fill="none" stroke="' + g + '" stroke-width="4"/>' +
+        '<circle cx="60" cy="62" r="4" fill="' + g + '"/>' +
+        '<path d="M60 20 v9 M40 24 l4 9 M80 24 l-4 9" stroke="' + g + '" stroke-width="3.5" stroke-linecap="round"/>';
+    },
+    minion: function (g) { // 爪痕
+      return '<path d="M37 23 Q52 58 39 97" fill="none" stroke="' + g + '" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<path d="M60 21 Q75 58 62 99" fill="none" stroke="' + g + '" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<path d="M83 23 Q98 58 85 97" fill="none" stroke="' + g + '" stroke-width="5.5" stroke-linecap="round"/>';
+    }
+  };
+
+  // 大徽章（角色立绘）
+  function roleIcon(roleId, size) {
+    var team = TEAM[roleId] || 'good';
+    uid++;
+    var d = defs(team);
+    return '<svg viewBox="0 0 120 120" width="' + size + '" height="' + size + '" role="img" aria-label="' + NAMES[roleId] + '" class="role-art">' +
+      d + '<circle cx="60" cy="60" r="56" fill="url(#ad' + uid + ')" stroke="' + gold(uid) + '" stroke-width="2.5"/>' +
+      EMBLEMS[roleId](gold(uid)) + '</svg>';
+  }
+
+  // 小图标（UI 功能图标）
+  function mini(inner, size, viewBox) {
+    viewBox = viewBox || '0 0 24 24';
+    uid++;
+    var d = '<defs><linearGradient id="ag' + uid + '" x1="0" y1="0" x2="0" y2="24" gradientUnits="userSpaceOnUse">' +
+      '<stop offset="0%" stop-color="' + GOLD_L + '"/><stop offset="100%" stop-color="' + GOLD + '"/></linearGradient></defs>';
+    return '<svg viewBox="' + viewBox + '" width="' + size + '" height="' + size + '" aria-hidden="true" style="vertical-align:-3px">' +
+      d + inner(gold(uid)) + '</svg>';
+  }
+
+  var crown = function (size) {
+    return mini(function (g) {
+      return '<path d="M4.5 17.5 L4.5 8 L10.5 12 L16 3.5 L21.5 12 L27.5 8 L27.5 17.5 Z" fill="' + g + '"/>' +
+        '<rect x="4.5" y="19" width="23" height="3" rx="1.5" fill="' + g + '"/>';
+    }, size, '0 0 32 24');
+  };
+  var doc = function (size) {
+    return mini(function (g) {
+      return '<rect x="5.5" y="3" width="13" height="18" rx="2" fill="none" stroke="' + g + '" stroke-width="2"/>' +
+        '<path d="M9 8.5 h6 M9 12 h6 M9 15.5 h4" stroke="' + g + '" stroke-width="2" stroke-linecap="round"/>';
+    }, size);
+  };
+  var book = function (size) {
+    return mini(function (g) {
+      return '<path d="M12 5.5 Q8 2.5 3.5 4.5 V19.5 Q8 17.5 12 20.5 Q16 17.5 20.5 19.5 V4.5 Q16 2.5 12 5.5 Z" fill="none" stroke="' + g + '" stroke-width="2" stroke-linejoin="round"/>' +
+        '<path d="M12 5.5 V20.5" stroke="' + g + '" stroke-width="2"/>';
+    }, size);
+  };
+  var info = function (size) {
+    return mini(function (g) {
+      return '<circle cx="12" cy="12" r="9" fill="none" stroke="' + g + '" stroke-width="2"/>' +
+        '<path d="M12 11 V17" stroke="' + g + '" stroke-width="2.4" stroke-linecap="round"/>' +
+        '<circle cx="12" cy="7.4" r="1.4" fill="' + g + '"/>';
+    }, size);
+  };
+
+  return {
+    roleIcon: roleIcon,
+    crown: crown,
+    doc: doc,
+    book: book,
+    info: info,
+    NAMES: NAMES,
+    TEAM: TEAM
+  };
+})();
+
+</script>
+<script>
 (function () {
   'use strict';
   var C = window.AvalonCore;
@@ -586,7 +754,7 @@
     order.forEach(function (r) {
       if (!counts[r]) return;
       var ro = C.ROLES[r];
-      var label = ro.icon + ro.name + (counts[r] > 1 ? ' ×' + counts[r] : '');
+      var label = AvalonArt.roleIcon(r, 19) + ' ' + ro.name + (counts[r] > 1 ? ' ×' + counts[r] : '');
       (ro.team === 'good' ? good : evil).push(label);
     });
     return { good: good, evil: evil };
@@ -611,12 +779,12 @@
       '<div class="divider"></div>' +
       '<div class="center small"><b style="color:var(--good2)">蓝方（好人）</b>：' + sum.good.join('　') + '</div>' +
       '<div class="center small" style="margin-top:4px"><b style="color:var(--evil2)">红方（坏人）</b>：' + sum.evil.join('　') + '</div>' +
-      '<div class="hint-box" style="text-align:center">📋 任务人数：' + quests + '</div></div>' +
+      '<div class="hint-box" style="text-align:center">' + AvalonArt.doc(14) + ' 任务人数：' + quests + '</div></div>' +
       '<div class="card"><div class="small muted" style="margin-bottom:8px">玩家昵称（可留空使用默认）</div>' +
       '<div class="name-grid">' + nameInputs + '</div>' +
       '<button class="btn" data-action="start">开始游戏</button>' +
-      '<div class="btn-row"><button class="btn ghost" data-action="show-rules">📖 规则速查</button>' +
-      '<button class="btn ghost" data-action="show-about">ℹ️ 关于</button></div></div>' +
+      '<div class="btn-row"><button class="btn ghost" data-action="show-rules">' + AvalonArt.book(15) + ' 规则速查</button>' +
+      '<button class="btn ghost" data-action="show-about">' + AvalonArt.info(15) + ' 关于</button></div></div>' +
       '<div class="footer-note">预览版 v0.1 · 规则按《The Resistance: Avalon》官方规则书实现<br>后续将按项目路线图开发 Unity 安卓版（联机 / 美术 / 上架）</div>';
   }
 
@@ -666,7 +834,7 @@
       '<div class="card glow" style="padding:0;overflow:hidden">' +
       '<div class="role-card ' + ro.team + '">' +
       '<div class="player-tag">玩家：' + esc(p.name) + '</div>' +
-      '<div class="icon">' + ro.icon + '</div>' +
+      '<div class="art-box">' + AvalonArt.roleIcon(p.role, 102) + '</div>' +
       '<div class="rname serif">' + ro.name + '</div>' +
       '<div class="badge">' + (ro.team === 'good' ? '蓝方 · 亚瑟的忠臣' : '红方 · 莫德雷德的爪牙') + '</div>' +
       '<div class="rdesc">' + ro.desc + '</div>' +
@@ -704,34 +872,32 @@
     var S = UI.S, q = C.questOf(S);
     var chips = '';
     for (var i = 0; i < S.n; i++) {
-      var sel = i === S.leader || (UI.data.selected && UI.data.selected.indexOf(i) >= 0);
-      chips += '<button class="chip' + (sel ? ' selected' : '') + '" data-action="toggle-player" data-idx="' + i + '"' +
-        (i === S.leader ? ' disabled' : '') + '>' +
-        (i === S.leader ? '<span class="crown">👑</span>' : '') +
+      var sel = UI.data.selected && UI.data.selected.indexOf(i) >= 0;
+      chips += '<button class="chip' + (sel ? ' selected' : '') + '" data-action="toggle-player" data-idx="' + i + '">' +
+        (i === S.leader ? '<span class="crown">' + AvalonArt.crown(16) + '</span>' : '') +
         '<div class="avatar">' + esc(S.players[i].name.charAt(0)) + '</div>' + esc(S.players[i].name) + '</button>';
     }
-    var selCount = UI.data.selected ? UI.data.selected.length + 1 : 1; // 队长始终在内
+    var selCount = UI.data.selected ? UI.data.selected.length : 0;
     app.innerHTML =
       '<div class="topbar"><div class="round-info">第 ' + (S.round + 1) + ' / 5 轮任务</div>' +
-      '<div class="icon-btns"><button data-action="show-log">📜 日志</button><button data-action="show-rules">📖 规则</button></div></div>' +
-      '<div class="topbar" style="margin-top:0"><div class="leader-info">👑 队长：' + esc(S.players[S.leader].name) + '</div>' +
+      '<div class="icon-btns"><button data-action="show-log">' + AvalonArt.doc(14) + ' 日志</button><button data-action="show-rules">' + AvalonArt.book(14) + ' 规则</button></div></div>' +
+      '<div class="topbar" style="margin-top:0"><div class="leader-info">' + AvalonArt.crown(14) + ' 队长：' + esc(S.players[S.leader].name) + '</div>' +
       '<div class="muted small">需选出 <b style="color:var(--gold2)">' + q.size + '</b> 人</div></div>' +
       missionTrackHtml(S) +
       (q.twoFails ? '<div class="hint-box">⚠ 本轮为“双失败票”任务：需要 <b>2 张</b>失败票才算任务失败</div>' : '') +
-      '<div class="card"><div class="center" style="font-weight:600">请点选 ' + q.size + ' 名队员（👑队长已在内）</div>' +
+      '<div class="card"><div class="center" style="font-weight:600">请点选 ' + q.size + ' 名队员（队长可不参加）</div>' +
       '<div class="players-grid' + (S.n > 6 ? ' c4' : '') + '">' + chips + '</div>' +
-      '<div class="center muted small">已选 ' + selCount + ' / ' + q.size + '（含队长）</div>' +
+      '<div class="center muted small">已选 ' + selCount + ' / ' + q.size + '</div>' +
       '<button class="btn" data-action="confirm-team"' + (selCount === q.size ? '' : ' disabled') + '>确认提案</button></div>';
   }
 
   function togglePlayer(idx) {
     var S = UI.S, q = C.questOf(S);
     var sel = (UI.data.selected || []).slice();
-    if (idx === S.leader) { toast('队长已在队伍中'); return; }
     var pos = sel.indexOf(idx);
     if (pos >= 0) sel.splice(pos, 1);
     else {
-      if (sel.length >= q.size - 1) { toast('含队长共 ' + q.size + ' 人，不能再多选'); return; }
+      if (sel.length >= q.size) { toast('最多选择 ' + q.size + ' 人'); return; }
       sel.push(idx);
     }
     setScreen('board', { selected: sel });
@@ -740,8 +906,7 @@
   function confirmTeam() {
     var S = UI.S, q = C.questOf(S);
     var sel = (UI.data.selected || []).slice();
-    if (sel.indexOf(S.leader) < 0) sel = [S.leader].concat(sel);
-    if (sel.length !== q.size) { toast('需要 ' + q.size + ' 名队员（含队长）'); return; }
+    if (sel.length !== q.size) { toast('需要选择 ' + q.size + ' 名队员'); return; }
     var r = C.proposeTeam(S, sel);
     if (!r.ok) { toast(r.error); return; }
     setScreen('board', { selected: [] });
@@ -763,7 +928,7 @@
     app.innerHTML =
       '<div class="card glow center">' +
       '<div class="muted small">队长提案</div>' +
-      '<div style="font-size:17px;line-height:1.7;margin:8px 0 2px">👑 ' + esc(S.players[S.proposal.leader].name) + ' 提名：</div>' +
+      '<div style="font-size:17px;line-height:1.7;margin:8px 0 2px">' + AvalonArt.crown(15) + ' ' + esc(S.players[S.proposal.leader].name) + ' 提名：</div>' +
       '<div style="font-size:18px;font-weight:700;color:var(--gold2)">' + members + '</div>' +
       '<div class="divider"></div>' +
       '<div class="small muted">你的一票（其他人请勿观看）</div>' +
@@ -826,7 +991,7 @@
       '<div class="card glow center">' +
       '<div class="muted small">第 ' + (S.round + 1) + ' 轮任务 · 你的任务票</div>' +
       '<div style="font-size:26px;font-weight:700;margin:10px 0 2px">' + esc(p.name) + '</div>' +
-      '<div class="small" style="color:var(--muted)">' + ro.icon + ' ' + ro.name + '（' + (ro.team === 'good' ? '好人' : '坏人') + '）</div>' +
+      '<div class="small" style="color:var(--muted)"><span style="vertical-align:-7px;margin-right:4px">' + AvalonArt.roleIcon(p.role, 24) + '</span>' + ro.name + '（' + (ro.team === 'good' ? '好人' : '坏人') + '）</div>' +
       '<div class="divider"></div>' + evilButtons + '</div>';
   }
 
@@ -895,7 +1060,7 @@
       '<div class="card glow center"><div class="muted small">刺客指认了</div>' +
       '<div style="font-size:28px;font-weight:700;margin:8px 0">' + esc(p.name) + '</div>' +
       '<div class="role-card ' + ro.team + '" style="padding:18px 14px">' +
-      '<div class="icon">' + ro.icon + '</div><div class="rname serif" style="font-size:24px">' + ro.name + '</div></div>' +
+      '<div class="art-box" style="height:88px">' + AvalonArt.roleIcon(p.role, 84) + '</div><div class="rname serif" style="font-size:24px">' + ro.name + '</div></div>' +
       '<div style="font-size:19px;font-weight:700;margin-top:14px;color:' + (correct ? 'var(--evil2)' : 'var(--good2)') + '">' +
       (correct ? '❌ 指认正确 —— 梅林被刺杀！' : '✓ 指认错误 —— 梅林安然无恙！') + '</div></div>' +
       '<button class="btn" data-action="verdict-continue">查看结算</button>';
@@ -908,7 +1073,7 @@
     var roles = S.players.map(function (p, i) {
       var ro = C.ROLES[p.role];
       return '<div class="result-item ' + (ro.team === 'good' ? 'good-r' : 'evil-r') + '">' +
-        '<span class="ri">' + ro.icon + '</span><div><b>' + esc(p.name) + '</b>' +
+        '<span class="ri">' + AvalonArt.roleIcon(p.role, 32) + '</span><div><b>' + esc(p.name) + '</b>' +
         '<div class="small muted">' + ro.name + ' · ' + (ro.team === 'good' ? '好人' : '坏人') + '</div></div></div>';
     }).join('');
     app.innerHTML =
@@ -930,7 +1095,7 @@
       rows += '<tr><td>' + n + '人</td><td>' + qs + '</td></tr>';
     });
     return '<div class="rules"><h3>对局流程</h3><ol>' +
-      '<li><b>组队</b>：队长选人（必须包含自己）</li>' +
+      '<li><b>组队</b>：队长选人，可以不包含自己（本版房规；官方规则要求队长在队内）</li>' +
       '<li><b>全员投票</b>：同意票<b>严格过半</b>通过（平局=否决）；否决后队长顺延下一位</li>' +
       '<li><b>连否 5 次</b>：坏人直接获胜</li>' +
       '<li><b>任务</b>：队员秘密出票，好人只能出“成功”，坏人可出“失败”；有 1 张失败票任务即失败（★轮需 2 张）</li>' +
