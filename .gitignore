@@ -10,3 +10,10 @@ avalon-android/app/build/
 __pycache__/
 *.tmp
 .DS_Store
+
+# C# 构建产物
+avalon-cs/**/bin/
+avalon-cs/**/obj/
+avalon-cs/.vs/
+# 团结引擎下载与安装包（不入库）
+_tuanjie_dl/

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- netstandard2.1：Unity 2022.3 / 团结引擎可直接引用；禁止引入任何引擎依赖 -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Avalon.Core</RootNamespace>
+  </PropertyGroup>
+</Project>
