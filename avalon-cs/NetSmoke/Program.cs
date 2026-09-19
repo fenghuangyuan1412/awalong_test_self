@@ -16,8 +16,9 @@ namespace Avalon.NetSmoke
 
         static int Main(string[] args)
         {
-            int port = args.Length > 0 ? int.Parse(args[0]) : 8790;
-            string url = "ws://127.0.0.1:" + port;
+            string url = args.Length > 0 && (args[0].StartsWith("ws://") || args[0].StartsWith("wss://"))
+                ? args[0]
+                : "ws://127.0.0.1:" + (args.Length > 0 ? args[0] : "8790");
             var names = new[] { "阿", "贝", "西", "德", "伊" };
             for (int i = 0; i < 5; i++) _cs.Add(new NetSession());
             foreach (var c in _cs) c.Toast += m => Console.WriteLine("[toast] " + m);
