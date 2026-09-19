@@ -27,3 +27,5 @@ avalon-unity/UserSettings/
 avalon-unity/build/
 *.csproj
 *.sln
+
+node_modules/

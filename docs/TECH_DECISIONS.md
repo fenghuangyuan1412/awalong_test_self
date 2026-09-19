@@ -45,10 +45,11 @@
 **当前 APK 与正式版的关系**：`avalon-preview` 的 H5 APK（v0.2.0）为热座玩法先行验证；
 Unity 版 `release/avalon-unity-debug.apk` 为 Phase 2 交付物，热座交互设计（传递确认页、双轨道、私密出票）已 1:1 移植。
 
-## D3 · 联机方案（状态：沿用提示词，Phase 4 前最终确认）
+## D3 · 联机方案（状态：已定稿，2026-09-19）
 
-首选 Unity Netcode for GameObjects + UGS 免费层；备选 Photon Fusion（回合制更友好）。
-若届时仍采用原生路线，则改用自建 WebSocket 房主权威方案——Phase 4 启动前出对比文档。
+**决策**：自建 WebSocket 房主权威服务器（Node + 复用 `core.js` 做权威判定），部署在用户自有云服务器。
+架构、协议、视图过滤与断线策略见 **docs/NETPLAY.md**。
+Unity Netcode + UGS 依赖 Unity 官方云托管，与自有服务器诉求不符，弃用；Photon 有免费额度上限且引入第三方依赖，弃用。
 
 ## D5 · 美术方案（2026-09-19，已采纳，Phase 3 首批）
 

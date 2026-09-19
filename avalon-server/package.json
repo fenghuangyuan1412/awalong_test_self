@@ -1,0 +1,14 @@
+{
+  "name": "avalon-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "阿瓦隆联机权威服务器（复用 avalon-preview/core.js）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "sim": "node test/sim.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
