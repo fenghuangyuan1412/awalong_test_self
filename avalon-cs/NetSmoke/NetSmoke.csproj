@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 联机客户端烟雾测试：编译 _unity_staging 的 Game/Networking 源码（与 Unity 同一份代码），
+       用真实 NetSession 连本地 node 服务端跑一整局。运行见 test_netplay.ps1 -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Avalon.NetSmoke</RootNamespace>
+    <AssemblyName>NetSmoke</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Avalon.Core/Avalon.Core.csproj" />
+    <Compile Include="../../_unity_staging/Assets/Scripts/Game/GameSession.cs" />
+    <Compile Include="../../_unity_staging/Assets/Scripts/Networking/NetJson.cs" />
+    <Compile Include="../../_unity_staging/Assets/Scripts/Networking/NetSession.cs" />
+  </ItemGroup>
+</Project>
